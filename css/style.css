@@ -1,75 +1,544 @@
+/* ==========================================
+   ChatOpen - CSS/style.css
+   ========================================== */
+
+
+/* ==========================================
+   RESET
+   ========================================== */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background: #f5f7fb;
-    color: #222;
+html {
+    scroll-behavior: smooth;
 }
 
-.welcome {
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f7fb;
+    color: #172033;
     min-height: 100vh;
+}
+
+
+/* ==========================================
+   LIENS
+   ========================================== */
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+
+/* ==========================================
+   BOUTONS
+   ========================================== */
+
+button {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+
+/* ==========================================
+   HEADER - ACCUEIL
+   ========================================== */
+
+.header {
+    width: 100%;
+    padding: 18px 7%;
+    background: #ffffff;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 25px;
+    border-bottom: 1px solid #e5e9f0;
 }
 
 .logo {
-    width: 90px;
-    height: 90px;
-    border-radius: 25px;
-    background: #2563eb;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.logo span {
+    margin-right: 6px;
+}
+
+.header nav {
     display: flex;
-    align-items: center;
+    gap: 22px;
+}
+
+.header nav a {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.header nav a:hover {
+    opacity: 0.7;
+}
+
+
+/* ==========================================
+   PAGE D'ACCUEIL
+   ========================================== */
+
+.hero {
+    min-height: 500px;
+    display: flex;
     justify-content: center;
-    font-size: 45px;
+    align-items: center;
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.hero-content {
+    max-width: 650px;
+}
+
+.icon {
+    font-size: 65px;
     margin-bottom: 20px;
 }
 
-h1 {
-    font-size: 38px;
-    margin-bottom: 10px;
+.hero h1 {
+    font-size: 42px;
+    margin-bottom: 18px;
 }
 
-p {
-    color: #666;
-    font-size: 17px;
-    margin-bottom: 30px;
+.hero h1 span {
+    font-weight: 800;
 }
+
+.hero p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #667085;
+}
+
+
+/* ==========================================
+   BOUTONS ACCUEIL
+   ========================================== */
 
 .buttons {
-    width: 100%;
-    max-width: 350px;
     display: flex;
-    flex-direction: column;
-    gap: 14px;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    flex-wrap: wrap;
 }
 
 .btn {
-    text-decoration: none;
-    padding: 15px;
-    border-radius: 12px;
-    font-size: 17px;
-    font-weight: bold;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-weight: 700;
+    transition: 0.2s;
 }
 
-.login {
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn.primary {
     background: #2563eb;
-    color: white;
+    color: #ffffff;
 }
 
-.register {
-    background: white;
+.btn.secondary {
+    background: #e8eefc;
+    color: #1d4ed8;
+}
+
+
+/* ==========================================
+   FEATURES
+   ========================================== */
+
+.features {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px 20px 70px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.feature {
+    background: #ffffff;
+    padding: 30px 22px;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid #e5e9f0;
+}
+
+.feature-icon {
+    font-size: 38px;
+    margin-bottom: 15px;
+}
+
+.feature h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.feature p {
+    color: #667085;
+    line-height: 1.5;
+}
+
+
+/* ==========================================
+   FOOTER
+   ========================================== */
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #667085;
+    font-size: 14px;
+}
+
+
+/* ==========================================
+   AUTHENTIFICATION
+   ========================================== */
+
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 25px;
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 430px;
+    background: #ffffff;
+    padding: 35px;
+    border-radius: 18px;
+    border: 1px solid #e5e9f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.auth-box .logo {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.auth-box h1 {
+    text-align: center;
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.auth-box > p {
+    text-align: center;
+    color: #667085;
+    margin-bottom: 25px;
+}
+
+
+/* ==========================================
+   FORMULAIRES
+   ========================================== */
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+form input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 18px;
+    border: 1px solid #d5dbe5;
+    border-radius: 10px;
+    outline: none;
+    font-size: 15px;
+}
+
+form input:focus {
+    border-color: #2563eb;
+}
+
+form button {
+    padding: 14px;
+    border-radius: 10px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    margin-top: 5px;
+}
+
+form button:hover {
+    opacity: 0.9;
+}
+
+
+/* ==========================================
+   LIENS AUTHENTIFICATION
+   ========================================== */
+
+.auth-link {
+    margin-top: 20px;
+}
+
+.auth-link a {
+    font-weight: 700;
     color: #2563eb;
-    border: 2px solid #2563eb;
 }
 
-.btn:active {
-    transform: scale(0.98);
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    color: #667085;
+    font-size: 14px;
+}
+
+
+/* ==========================================
+   APPLICATION CHAT
+   ========================================== */
+
+.chat-app {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #eef2f7;
+}
+
+
+/* ==========================================
+   HEADER DU CHAT
+   ========================================== */
+
+.chat-header {
+    min-height: 70px;
+    padding: 12px 18px;
+    background: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #dfe4ec;
+}
+
+.chat-logo {
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.chat-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.current-username {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#logoutButton {
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: #eef2f7;
+    color: #344054;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#logoutButton:hover {
+    background: #e2e8f0;
+}
+
+
+/* ==========================================
+   MESSAGES
+   ========================================== */
+
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+
+/* MESSAGE */
+
+.message {
+    max-width: 75%;
+    padding: 10px 13px;
+    border-radius: 14px;
+    word-wrap: break-word;
+}
+
+.my-message {
+    align-self: flex-end;
+    background: #2563eb;
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+}
+
+.other-message {
+    align-self: flex-start;
+    background: #ffffff;
+    color: #172033;
+    border-bottom-left-radius: 4px;
+}
+
+
+/* NOM */
+
+.message-user {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.8;
+}
+
+
+/* TEXTE */
+
+.message-text {
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+
+/* HEURE */
+
+.message-time {
+    font-size: 10px;
+    margin-top: 5px;
+    opacity: 0.7;
+    text-align: right;
+}
+
+
+/* ==========================================
+   ZONE D'ÉCRITURE
+   ========================================== */
+
+.chat-input-area {
+    width: 100%;
+    padding: 12px;
+    background: #ffffff;
+    border-top: 1px solid #dfe4ec;
+    display: flex;
+    gap: 10px;
+}
+
+#messageInput {
+    flex: 1;
+    min-width: 0;
+    padding: 13px 15px;
+    border: 1px solid #d5dbe5;
+    border-radius: 12px;
+    outline: none;
+    font-size: 15px;
+}
+
+#messageInput:focus {
+    border-color: #2563eb;
+}
+
+#sendButton {
+    padding: 13px 18px;
+    border-radius: 12px;
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+#sendButton:hover {
+    opacity: 0.9;
+}
+
+
+/* ==========================================
+   MOBILE
+   ========================================== */
+
+@media (max-width: 700px) {
+
+    .header {
+        padding: 15px;
+    }
+
+    .header nav {
+        gap: 10px;
+    }
+
+    .header nav a {
+        font-size: 12px;
+    }
+
+    .hero {
+        min-height: 450px;
+        padding: 40px 20px;
+    }
+
+    .hero h1 {
+        font-size: 32px;
+    }
+
+    .hero p {
+        font-size: 16px;
+    }
+
+    .features {
+        grid-template-columns: 1fr;
+        padding-bottom: 40px;
+    }
+
+    .auth-box {
+        padding: 25px 20px;
+    }
+
+    .chat-header {
+        padding: 10px 12px;
+    }
+
+    .chat-logo {
+        font-size: 18px;
+    }
+
+    .current-username {
+        display: none;
+    }
+
+    .messages {
+        padding: 12px;
+    }
+
+    .message {
+        max-width: 85%;
+    }
+
+    .chat-input-area {
+        padding: 9px;
+    }
+
+    #sendButton {
+        padding: 12px 14px;
+    }
 }
