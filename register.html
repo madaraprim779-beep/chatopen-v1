@@ -1,109 +1,62 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Créer un compte - ChatOpen</title>
-
-    <link rel="stylesheet" href="CSS/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Créer un compte - ChatOpen</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
+  <main class="auth">
+    <div class="card">
+      <div class="logo small">C</div>
 
-    <main class="auth-container">
+      <h1>Créer un compte</h1>
+      <p class="muted">
+        Rejoins ChatOpen en quelques secondes.
+      </p>
 
-        <div class="auth-box">
+      <form id="registerForm">
 
-            <div class="logo">
-                💬 ChatOpen
-            </div>
+        <input
+          id="username"
+          type="text"
+          placeholder="Nom d'utilisateur"
+          maxlength="24"
+          required
+        >
 
-            <h1>Créer un compte</h1>
+        <input
+          id="password"
+          type="password"
+          placeholder="Mot de passe"
+          minlength="6"
+          required
+        >
 
-            <p>Crée ton compte ChatOpen</p>
+        <input
+          id="confirm"
+          type="password"
+          placeholder="Confirmer le mot de passe"
+          minlength="6"
+          required
+        >
 
-            <form id="registerForm">
+        <button class="btn full" type="submit">
+          Créer mon compte
+        </button>
 
-                <label for="username">
-                    Nom d'utilisateur
-                </label>
+        <p id="error" class="error"></p>
+      </form>
 
-                <input
-                    type="text"
-                    id="username"
-                    placeholder="Entre ton nom"
-                    autocomplete="username"
-                    required
-                >
+      <p class="bottom-text">
+        Déjà un compte ?
+        <a href="login.html">Se connecter</a>
+      </p>
+    </div>
+  </main>
 
-                <label for="password">
-                    Mot de passe
-                </label>
-
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="Crée ton mot de passe"
-                    autocomplete="new-password"
-                    minlength="6"
-                    required
-                >
-
-                <label for="confirm-password">
-                    Confirmer le mot de passe
-                </label>
-
-                <input
-                    type="password"
-                    id="confirm-password"
-                    placeholder="Confirme ton mot de passe"
-                    autocomplete="new-password"
-                    minlength="6"
-                    required
-                >
-
-                <button type="submit">
-                    Créer mon compte
-                </button>
-
-            </form>
-
-            <div id="accountCreated" class="account-created">
-                <h2>🎉 Compte créé !</h2>
-
-                <p>Ton numéro ChatOpen :</p>
-
-                <strong id="chatopenNumber">
-                    ---
-                </strong>
-
-                <p>
-                    Garde ce numéro pour que tes amis
-                    puissent te retrouver.
-                </p>
-
-                <a href="login.html">
-                    Se connecter
-                </a>
-            </div>
-
-            <p class="auth-link">
-                Tu as déjà un compte ?
-                <a href="login.html">
-                    Se connecter
-                </a>
-            </p>
-
-            <a href="index.html" class="back-link">
-                ← Retour à l'accueil
-            </a>
-
-        </div>
-
-    </main>
-
-    <script src="JS/app.js"></script>
-
+  <script type="module" src="js/register.js"></script>
 </body>
 </html>
