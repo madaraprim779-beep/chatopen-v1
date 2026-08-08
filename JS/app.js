@@ -1,279 +1,73 @@
-// ==========================================
-// ChatOpen - app.js
-// ==========================================
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-document.addEventListener("DOMContentLoaded", () => {
+    <title>Chat - ChatOpen</title>
 
-    console.log("ChatOpen est chargé.");
+    <link rel="stylesheet" href="CSS/style.css">
+</head>
 
-    // ==========================================
-    // INSCRIPTION
-    // ==========================================
+<body>
 
-    const registerForm = document.getElementById("registerForm");
+    <div class="chat-app">
 
-    if (registerForm) {
+        <!-- EN-TÊTE -->
+        <header class="chat-header">
 
-        registerForm.addEventListener("submit", (event) => {
+            <div class="chat-logo">
+                💬 ChatOpen
+            </div>
 
-            event.preventDefault();
+            <div class="chat-user">
+                <span class="current-username">
+                    Utilisateur
+                </span>
 
-            const username =
-                document.getElementById("username").value.trim();
+                <button id="logoutButton" type="button">
+                    Déconnexion
+                </button>
+            </div>
 
-            const email =
-                document.getElementById("email").value.trim();
+        </header>
 
-            const password =
-                document.getElementById("password").value;
 
-            const confirmPassword =
-                document.getElementById("confirm-password").value;
+        <!-- ZONE DES MESSAGES -->
+        <main
+            id="messages"
+            class="messages"
+            aria-label="Messages"
+        >
+        </main>
 
 
-            // Vérification du nom
-            if (username.length < 3) {
-                alert("Le nom d'utilisateur doit contenir au moins 3 caractères.");
-                return;
-            }
+        <!-- ZONE D'ÉCRITURE -->
+        <footer class="chat-input-area">
 
+            <input
+                type="text"
+                id="messageInput"
+                placeholder="Écris un message..."
+                autocomplete="off"
+                maxlength="1000"
+            >
 
-            // Vérification du mot de passe
-            if (password.length < 6) {
-                alert("Le mot de passe doit contenir au moins 6 caractères.");
-                return;
-            }
+            <button
+                type="button"
+                id="sendButton"
+            >
+                Envoyer
+            </button>
 
+        </footer>
 
-            // Vérification des mots de passe
-            if (password !== confirmPassword) {
-                alert("Les mots de passe ne correspondent pas.");
-                return;
-            }
+    </div>
 
 
-            // Vérifier si un compte existe déjà
-            const existingUser =
-                localStorage.getItem("chatopen_user");
+    <!-- SCRIPTS -->
+    <script src="JS/app.js"></script>
+    <script src="JS/chat.js"></script>
 
-            if (existingUser) {
-
-                const user = JSON.parse(existingUser);
-
-                if (user.email === email) {
-                    alert("Un compte avec cette adresse e-mail existe déjà.");
-                    return;
-                }
-            }
-
-
-            // Création du compte local
-            const newUser = {
-                username: username,
-                email: email,
-                password: password
-            };
-
-
-            localStorage.setItem(
-                "chatopen_user",
-                JSON.stringify(newUser)
-            );
-
-
-            alert("Compte ChatOpen créé avec succès !");
-
-
-            // Redirection
-            window.location.href = "login.html";
-
-        });
-
-    }
-
-
-    // ==========================================
-    // CONNEXION
-    // ==========================================
-
-    const loginForm =
-        document.getElementById("loginForm");
-
-    if (loginForm) {
-
-        loginForm.addEventListener("submit", (event) => {
-
-            event.preventDefault();
-
-            const email =
-                document.getElementById("email").value.trim();
-
-            const password =
-                document.getElementById("password").value;
-
-
-            // Récupération du compte
-            const savedUser =
-                localStorage.getItem("chatopen_user");
-
-
-            if (!savedUser) {
-
-                alert(
-                    "Aucun compte trouvé. Crée d'abord un compte."
-                );
-
-                return;
-            }
-
-
-            const user =
-                JSON.parse(savedUser);
-
-
-            // Vérification de l'e-mail
-            if (email !== user.email) {
-
-                alert("Adresse e-mail incorrecte.");
-
-                return;
-            }
-
-
-            // Vérification du mot de passe
-            if (password !== user.password) {
-
-                alert("Mot de passe incorrect.");
-
-                return;
-            }
-
-
-            // Connexion réussie
-            localStorage.setItem(
-                "chatopen_logged_in",
-                "true"
-            );
-
-
-            localStorage.setItem(
-                "chatopen_current_user",
-                JSON.stringify({
-                    username: user.username,
-                    email: user.email
-                })
-            );
-
-
-            alert(
-                "Connexion réussie ! Bienvenue sur ChatOpen."
-            );
-
-
-            // Aller vers le chat
-            window.location.href = "chat.html";
-
-        });
-
-    }
-
-
-    // ==========================================
-    // PROTECTION DE CHAT.HTML
-    // ==========================================
-
-    const currentPage =
-        window.location.pathname.split("/").pop();
-
-
-    if (currentPage === "chat.html") {
-
-        const loggedIn =
-            localStorage.getItem("chatopen_logged_in");
-
-
-        if (loggedIn !== "true") {
-
-            alert(
-                "Tu dois être connecté pour accéder à ChatOpen."
-            );
-
-            window.location.href = "login.html";
-
-            return;
-        }
-
-    }
-
-
-    // ==========================================
-    // AFFICHER L'UTILISATEUR CONNECTÉ
-    // ==========================================
-
-    const currentUser =
-        localStorage.getItem("chatopen_current_user");
-
-
-    if (currentUser) {
-
-        try {
-
-            const user =
-                JSON.parse(currentUser);
-
-            const usernameElements =
-                document.querySelectorAll(
-                    ".current-username"
-                );
-
-
-            usernameElements.forEach((element) => {
-
-                element.textContent =
-                    user.username;
-
-            });
-
-        } catch (error) {
-
-            console.log(
-                "Impossible de récupérer l'utilisateur."
-            );
-
-        }
-
-    }
-
-
-    // ==========================================
-    // DÉCONNEXION
-    // ==========================================
-
-    const logoutButton =
-        document.getElementById("logoutButton");
-
-
-    if (logoutButton) {
-
-        logoutButton.addEventListener(
-            "click",
-            () => {
-
-                localStorage.removeItem(
-                    "chatopen_logged_in"
-                );
-
-                localStorage.removeItem(
-                    "chatopen_current_user"
-                );
-
-
-                window.location.href =
-                    "login.html";
-
-            }
-        );
-
-    }
-
-});
+</body>
+</html>
