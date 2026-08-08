@@ -1,78 +1,48 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatOpen — Discussions</title>
-
-    <link rel="stylesheet" href="CSS/chat.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatOpen</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-    <header class="topbar">
-        <div class="brand">
-            <span class="logo">💬</span>
-            <strong>ChatOpen</strong>
-        </div>
+  <div class="chat-app">
 
-        <button class="search">🔍</button>
-        <button class="menu">⋮</button>
+    <header class="topbar">
+      <div>
+        <h2>ChatOpen</h2>
+        <span id="myId">ID : chargement...</span>
+      </div>
+
+      <div class="top-actions">
+        <button onclick="location.href='profils.html'">👤</button>
+        <button onclick="location.href='settings.html'">⚙️</button>
+      </div>
     </header>
 
-    <main class="chat-container">
+    <div class="search-box">
+      <input
+        id="search"
+        type="text"
+        placeholder="Rechercher..."
+      >
+    </div>
 
-        <div class="chat-title">
-            <h2>Discussions</h2>
-            <button class="new-chat">＋</button>
-        </div>
+    <section id="conversationList">
+      <div class="empty">
+        <h3>Aucune discussion</h3>
+        <p>Commence une nouvelle conversation.</p>
+      </div>
+    </section>
 
-        <div class="search-box">
-            <input
-                type="text"
-                id="searchInput"
-                placeholder="Rechercher une discussion..."
-            >
-        </div>
+    <button id="newChat" class="new-chat">+</button>
 
-        <div id="chatList" class="chat-list">
+  </div>
 
-            <div class="empty-chat">
-                <div>💬</div>
-                <h3>Aucune discussion</h3>
-                <p>
-                    Commence une nouvelle conversation avec tes amis.
-                </p>
-
-                <button class="start-btn">
-                    Nouvelle discussion
-                </button>
-            </div>
-
-        </div>
-
-    </main>
-
-    <nav class="bottom-nav">
-
-        <a href="chat.html" class="active">
-            💬
-            <span>Chats</span>
-        </a>
-
-        <a href="profile.html">
-            👤
-            <span>Profil</span>
-        </a>
-
-        <a href="settings.html">
-            ⚙️
-            <span>Paramètres</span>
-        </a>
-
-    </nav>
-
-    <script src="JS/chat.js"></script>
+  <script type="module" src="js/chat.js"></script>
 
 </body>
 </html>
