@@ -1,8 +1,12 @@
 // ==========================================
-// ChatOpen - chat.js
+// ChatOpen - JS/chat.js
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    // ------------------------------------------
+    // RÉCUPÉRATION DES ÉLÉMENTS
+    // ------------------------------------------
 
     const messageInput =
         document.getElementById("messageInput");
@@ -14,20 +18,26 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("messages");
 
 
-    // Vérifier que les éléments existent
+    // ------------------------------------------
+    // VÉRIFICATION
+    // ------------------------------------------
+
     if (
         !messageInput ||
         !sendButton ||
         !messagesContainer
     ) {
-        console.log("Éléments du chat introuvables.");
+        console.log(
+            "ChatOpen : éléments du chat introuvables."
+        );
+
         return;
     }
 
 
-    // ==========================================
+    // ------------------------------------------
     // UTILISATEUR CONNECTÉ
-    // ==========================================
+    // ------------------------------------------
 
     let currentUser = {
         username: "Utilisateur"
@@ -35,7 +45,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     const savedUser =
-        localStorage.getItem("chatopen_current_user");
+        localStorage.getItem(
+            "chatopen_current_user"
+        );
 
 
     if (savedUser) {
@@ -48,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
 
             console.log(
-                "Erreur utilisateur."
+                "Erreur lors de la récupération du compte."
             );
 
         }
@@ -56,21 +68,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    // ==========================================
+    // ------------------------------------------
     // RÉCUPÉRER LES MESSAGES
-    // ==========================================
+    // ------------------------------------------
 
-    let messages =
-        JSON.parse(
-            localStorage.getItem(
-                "chatopen_messages"
-            )
-        ) || [];
+    let messages = [];
+
+    try {
+
+        messages =
+            JSON.parse(
+                localStorage.getItem(
+                    "chatopen_messages"
+                )
+            ) || [];
+
+    } catch (error) {
+
+        messages = [];
+
+    }
 
 
-    // ==========================================
+    // ------------------------------------------
     // AFFICHER LES MESSAGES
-    // ==========================================
+    // ------------------------------------------
 
     function displayMessages() {
 
@@ -106,19 +128,50 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
 
-            messageElement.innerHTML = `
-                <div class="message-user">
-                    ${escapeHTML(message.username)}
-                </div>
+            const usernameElement =
+                document.createElement("div");
 
-                <div class="message-text">
-                    ${escapeHTML(message.text)}
-                </div>
+            usernameElement.classList.add(
+                "message-user"
+            );
 
-                <div class="message-time">
-                    ${message.time}
-                </div>
-            `;
+            usernameElement.textContent =
+                message.username;
+
+
+            const textElement =
+                document.createElement("div");
+
+            textElement.classList.add(
+                "message-text"
+            );
+
+            textElement.textContent =
+                message.text;
+
+
+            const timeElement =
+                document.createElement("div");
+
+            timeElement.classList.add(
+                "message-time"
+            );
+
+            timeElement.textContent =
+                message.time;
+
+
+            messageElement.appendChild(
+                usernameElement
+            );
+
+            messageElement.appendChild(
+                textElement
+            );
+
+            messageElement.appendChild(
+                timeElement
+            );
 
 
             messagesContainer.appendChild(
@@ -135,9 +188,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    // ==========================================
+    // ------------------------------------------
     // ENVOYER UN MESSAGE
-    // ==========================================
+    // ------------------------------------------
 
     function sendMessage() {
 
@@ -145,17 +198,18 @@ document.addEventListener("DOMContentLoaded", () => {
             messageInput.value.trim();
 
 
+        // Empêcher les messages vides
         if (!text) {
             return;
         }
 
 
-        const now =
+        const date =
             new Date();
 
 
         const time =
-            now.toLocaleTimeString(
+            date.toLocaleTimeString(
                 "fr-FR",
                 {
                     hour: "2-digit",
@@ -178,26 +232,31 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
 
-        messages.push(newMessage);
+        messages.push(
+            newMessage
+        );
 
 
+        // Sauvegarder
         localStorage.setItem(
             "chatopen_messages",
             JSON.stringify(messages)
         );
 
 
+        // Vider la zone de texte
         messageInput.value = "";
 
 
+        // Afficher
         displayMessages();
 
     }
 
 
-    // ==========================================
+    // ------------------------------------------
     // BOUTON ENVOYER
-    // ==========================================
+    // ------------------------------------------
 
     sendButton.addEventListener(
         "click",
@@ -205,9 +264,9 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
 
-    // ==========================================
-    // TOUCHE ENTRÉE
-    // ==========================================
+    // ------------------------------------------
+    // ENVOYER AVEC ENTRÉE
+    // ------------------------------------------
 
     messageInput.addEventListener(
         "keydown",
@@ -225,26 +284,9 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
 
-    // ==========================================
-    // PROTECTION CONTRE LE HTML
-    // ==========================================
-
-    function escapeHTML(text) {
-
-        const element =
-            document.createElement("div");
-
-        element.textContent =
-            text;
-
-        return element.innerHTML;
-
-    }
-
-
-    // ==========================================
+    // ------------------------------------------
     // AFFICHAGE INITIAL
-    // ==========================================
+    // ------------------------------------------
 
     displayMessages();
 
