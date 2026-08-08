@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon profil - ChatOpen</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <main class="page">
+
+    <a href="chat.html" class="back">← Retour</a>
+
+    <div class="card profile-card">
+
+      <div id="avatar" class="avatar large">
+        C
+      </div>
+
+      <h1 id="name">Chargement...</h1>
+
+      <p id="id" class="muted">
+        ID ChatOpen : ...
+      </p>
+
+      <label>Nom d'utilisateur</label>
+
+      <input
+        id="newName"
+        type="text"
+        maxlength="24"
+        placeholder="Nouveau nom"
+      >
+
+      <button id="save" class="btn full">
+        Enregistrer
+      </button>
+
+      <p id="msg" class="success"></p>
+
+    </div>
+
+  </main>
+
+  <script type="module" src="js/profils.js"></script>
+
+</body>
+</html>
