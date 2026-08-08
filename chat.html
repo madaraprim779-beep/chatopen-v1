@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatOpen — Discussions</title>
+
+    <link rel="stylesheet" href="CSS/chat.css">
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <span class="logo">💬</span>
+            <strong>ChatOpen</strong>
+        </div>
+
+        <button class="search">🔍</button>
+        <button class="menu">⋮</button>
+    </header>
+
+    <main class="chat-container">
+
+        <div class="chat-title">
+            <h2>Discussions</h2>
+            <button class="new-chat">＋</button>
+        </div>
+
+        <div class="search-box">
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Rechercher une discussion..."
+            >
+        </div>
+
+        <div id="chatList" class="chat-list">
+
+            <div class="empty-chat">
+                <div>💬</div>
+                <h3>Aucune discussion</h3>
+                <p>
+                    Commence une nouvelle conversation avec tes amis.
+                </p>
+
+                <button class="start-btn">
+                    Nouvelle discussion
+                </button>
+            </div>
+
+        </div>
+
+    </main>
+
+    <nav class="bottom-nav">
+
+        <a href="chat.html" class="active">
+            💬
+            <span>Chats</span>
+        </a>
+
+        <a href="profile.html">
+            👤
+            <span>Profil</span>
+        </a>
+
+        <a href="settings.html">
+            ⚙️
+            <span>Paramètres</span>
+        </a>
+
+    </nav>
+
+    <script src="JS/chat.js"></script>
+
+</body>
+</html>
