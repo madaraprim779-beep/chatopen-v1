@@ -1,79 +1,39 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Connexion - ChatOpen</title>
-
-    <link rel="stylesheet" href="CSS/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - ChatOpen</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
+  <main class="auth">
+    <div class="card">
+      <div class="logo small">C</div>
 
-    <main class="auth-container">
+      <h1>Connexion</h1>
+      <p class="muted">Connecte-toi à ton compte ChatOpen.</p>
 
-        <div class="auth-box">
+      <form id="loginForm">
+        <input id="username" type="text" placeholder="Nom d'utilisateur" required>
 
-            <div class="logo">
-                💬 ChatOpen
-            </div>
+        <input id="password" type="password" placeholder="Mot de passe" required>
 
-            <h1>Connexion</h1>
+        <button class="btn full" type="submit">
+          Se connecter
+        </button>
 
-            <p>Connecte-toi avec ton numéro ChatOpen</p>
+        <p id="error" class="error"></p>
+      </form>
 
-            <form id="loginForm">
+      <p class="bottom-text">
+        Pas encore de compte ?
+        <a href="register.html">Créer un compte</a>
+      </p>
+    </div>
+  </main>
 
-                <label for="chatopenNumber">
-                    Numéro ChatOpen
-                </label>
-
-                <input
-                    type="text"
-                    id="chatopenNumber"
-                    name="chatopenNumber"
-                    placeholder="Ex : 704 582 193"
-                    inputmode="numeric"
-                    maxlength="11"
-                    required
-                >
-
-                <label for="password">
-                    Mot de passe
-                </label>
-
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="Ton mot de passe"
-                    autocomplete="current-password"
-                    required
-                >
-
-                <button type="submit">
-                    Se connecter
-                </button>
-
-            </form>
-
-            <p class="auth-link">
-                Pas encore de compte ?
-                <a href="register.html">
-                    Créer un compte
-                </a>
-            </p>
-
-            <a href="index.html" class="back-link">
-                ← Retour à l'accueil
-            </a>
-
-        </div>
-
-    </main>
-
-    <script src="JS/app.js"></script>
-
+  <script type="module" src="js/login.js"></script>
 </body>
 </html>
