@@ -12,7 +12,9 @@ import { auth, db } from "./firebase.js";
 const form = document.getElementById("registerForm");
 const usernameInput = document.getElementById("username");
 const passwordInput = document.getElementById("password");
+const confirmInput = document.getElementById("confirm");
 const error = document.getElementById("error");
+const button = document.getElementById("registerButton");
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -21,8 +23,9 @@ form.addEventListener("submit", async (event) => {
 
   const username = usernameInput.value.trim().toLowerCase();
   const password = passwordInput.value;
+  const confirm = confirmInput.value;
 
-  if (!username || !password) {
+  if (!username || !password || !confirm) {
     error.textContent = "Remplis tous les champs.";
     return;
   }
@@ -33,11 +36,20 @@ form.addEventListener("submit", async (event) => {
   }
 
   if (password.length < 6) {
-    error.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
+    error.textContent =
+      "Le mot de passe doit contenir au moins 6 caractères.";
+    return;
+  }
+
+  if (password !== confirm) {
+    error.textContent = "Les mots de passe ne correspondent pas.";
     return;
   }
 
   const email = `${username}@chatopen.app`;
+
+  button.disabled = true;
+  button.textContent = "Création...";
 
   try {
     const result = await createUserWithEmailAndPassword(
@@ -59,8 +71,16 @@ form.addEventListener("submit", async (event) => {
 
     if (err.code === "auth/email-already-in-use") {
       error.textContent = "Ce nom d'utilisateur existe déjà.";
+    } else if (err.code === "auth/invalid-email") {
+      error.textContent = "Nom d'utilisateur invalide.";
+    } else if (err.code === "auth/weak-password") {
+      error.textContent = "Le mot de passe est trop faible.";
     } else {
-      error.textContent = "Impossible de créer le compte.";
+      error.textContent =
+        "Erreur lors de la création du compte.";
     }
+
+    button.disabled = false;
+    button.textContent = "Créer mon compte";
   }
 });
