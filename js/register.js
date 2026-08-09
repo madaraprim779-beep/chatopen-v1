@@ -1,4 +1,9 @@
-import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+// js/register.js
+
+import {
+  createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
 import {
   collection,
   query,
@@ -9,10 +14,23 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-import { auth, db } from "./firebase.js";
+import {
+  auth,
+  db
+} from "./firebase.js";
+
+
+// ================================
+// ÉLÉMENTS DE LA PAGE
+// ================================
 
 const form = document.getElementById("registerForm");
 const error = document.getElementById("error");
+
+
+// ================================
+// NETTOYER LE NOM
+// ================================
 
 function nettoyerNom(nom) {
   return nom
@@ -21,6 +39,11 @@ function nettoyerNom(nom) {
     .replace(/[^a-z0-9._-]/g, "")
     .slice(0, 24);
 }
+
+
+// ================================
+// GÉNÉRER LE NUMÉRO CHATOPEN
+// ================================
 
 function genererIdentifiant() {
   const code = crypto.randomUUID()
@@ -31,20 +54,38 @@ function genererIdentifiant() {
   return "CO-" + code;
 }
 
+
+// ================================
+// CRÉATION DU COMPTE
+// ================================
+
 form.addEventListener("submit", async (event) => {
+
   event.preventDefault();
 
   error.textContent = "";
 
-  const username = nettoyerNom(
-    document.getElementById("username").value
-  );
+  const usernameInput =
+    document.getElementById("username").value;
 
   const password =
     document.getElementById("password").value;
 
   const confirm =
     document.getElementById("confirm").value;
+
+
+  // ================================
+  // NETTOYAGE DU NOM
+  // ================================
+
+  const username =
+    nettoyerNom(usernameInput);
+
+
+  // ================================
+  // VALIDATIONS
+  // ================================
 
   if (username.length < 3) {
     error.textContent =
@@ -64,25 +105,41 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
+
   try {
 
-    // Vérifier si le nom existe déjà
+    // ================================
+    // VÉRIFIER SI LE NOM EXISTE
+    // ================================
+
     const recherche = query(
       collection(db, "users"),
       where("username", "==", username)
     );
 
-    const resultat = await getDocs(recherche);
+    const resultat =
+      await getDocs(recherche);
 
     if (!resultat.empty) {
+
       error.textContent =
         "Ce nom d'utilisateur est déjà utilisé.";
+
       return;
     }
 
-    // Création du compte Firebase
+
+    // ================================
+    // EMAIL TECHNIQUE
+    // ================================
+
     const email =
       username + "@chatopen.local";
+
+
+    // ================================
+    // CRÉER LE COMPTE FIREBASE
+    // ================================
 
     const compte =
       await createUserWithEmailAndPassword(
@@ -91,28 +148,91 @@ form.addEventListener("submit", async (event) => {
         password
       );
 
-    // Génération de l'identifiant ChatOpen
-    const chatId = genererIdentifiant();
 
-    // Enregistrer l'utilisateur dans Firestore
+    // ================================
+    // GÉNÉRER L'IDENTIFIANT CHATOPEN
+    // ================================
+
+    const chatId =
+      genererIdentifiant();
+
+
+    // ================================
+    // CRÉER LE PROFIL FIRESTORE
+    // ================================
+
     await setDoc(
       doc(db, "users", compte.user.uid),
       {
         uid: compte.user.uid,
+
         username: username,
+
         chatId: chatId,
-        createdAt: serverTimestamp()
+
+        photo: "",
+
+        bio: "",
+
+        createdAt: serverTimestamp(),
+
+        online: true
       }
     );
 
-    // Aller vers l'application
-    window.location.href = "chat.html";
+
+    // ================================
+    // REDIRECTION
+    // ================================
+
+    window.location.replace("chat.html");
+
 
   } catch (err) {
 
-    console.error(err);
+    // ================================
+    // AFFICHER L'ERREUR
+    // ================================
 
-    error.textContent =
-      "Impossible de créer le compte. Vérifie ta configuration Firebase.";
+    console.error(
+      "ERREUR CHATOPEN :",
+      err.code,
+      err.message
+    );
+
+
+    if (err.code === "auth/operation-not-allowed") {
+
+      error.textContent =
+        "Email/Password n'est pas activé dans Firebase Authentication.";
+
+    } else if (err.code === "auth/email-already-in-use") {
+
+      error.textContent =
+        "Ce nom d'utilisateur est déjà utilisé.";
+
+    } else if (err.code === "auth/invalid-email") {
+
+      error.textContent =
+        "Firebase refuse l'adresse utilisée pour le compte.";
+
+    } else if (err.code === "auth/weak-password") {
+
+      error.textContent =
+        "Le mot de passe est trop faible.";
+
+    } else if (err.code === "permission-denied") {
+
+      error.textContent =
+        "Firestore bloque l'enregistrement du profil. Les règles doivent être configurées.";
+
+    } else {
+
+      error.textContent =
+        "Erreur : " +
+        (err.message || "Impossible de créer le compte.");
+    }
+
   }
+
 });
