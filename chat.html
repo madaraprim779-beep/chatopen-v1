@@ -1,48 +1,97 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>ChatOpen</title>
+
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-  <div class="chat-app">
+  <header class="topbar">
 
-    <header class="topbar">
-      <div>
-        <h2>ChatOpen</h2>
-        <span id="myId">ID : chargement...</span>
-      </div>
+    <div class="brand">
+      <div class="logo small">C</div>
+      <span>ChatOpen</span>
+    </div>
 
-      <div class="top-actions">
-        <button onclick="location.href='profils.html'">👤</button>
-        <button onclick="location.href='settings.html'">⚙️</button>
-      </div>
-    </header>
+    <nav>
+      <a href="profils.html">Profil</a>
+      <a href="settings.html">Paramètres</a>
+    </nav>
 
-    <div class="search-box">
+  </header>
+
+  <main class="chat-layout">
+
+    <aside class="users-panel">
+
+      <h2>Discussions</h2>
+
       <input
-        id="search"
+        id="searchUser"
         type="text"
         placeholder="Rechercher..."
       >
-    </div>
 
-    <section id="conversationList">
-      <div class="empty">
-        <h3>Aucune discussion</h3>
-        <p>Commence une nouvelle conversation.</p>
+      <div id="usersList">
+        <p class="muted">Aucun utilisateur pour le moment.</p>
       </div>
+
+    </aside>
+
+    <section class="chat-panel">
+
+      <div class="chat-header">
+        <div>
+          <h2 id="chatTitle">ChatOpen</h2>
+          <p id="chatStatus" class="muted">
+            Sélectionne une discussion
+          </p>
+        </div>
+      </div>
+
+      <div id="messages" class="messages">
+        <div class="empty-chat">
+          <div class="logo">C</div>
+          <h2>Bienvenue sur ChatOpen</h2>
+          <p class="muted">
+            Sélectionne un utilisateur pour commencer une discussion.
+          </p>
+        </div>
+      </div>
+
+      <form id="messageForm" class="message-form">
+
+        <input
+          id="messageInput"
+          type="text"
+          placeholder="Écrire un message..."
+          autocomplete="off"
+          disabled
+        >
+
+        <button
+          id="sendButton"
+          class="btn"
+          type="submit"
+          disabled
+        >
+          Envoyer
+        </button>
+
+      </form>
+
     </section>
 
-    <button id="newChat" class="new-chat">+</button>
-
-  </div>
+  </main>
 
   <script type="module" src="js/chat.js"></script>
 
 </body>
+
 </html>
