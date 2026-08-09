@@ -1,50 +1,72 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mon profil - ChatOpen</title>
+
+  <title>Profil - ChatOpen</title>
+
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-  <main class="page">
+  <header class="topbar">
 
-    <a href="chat.html" class="back">← Retour</a>
+    <div class="brand">
+      <div class="logo small">C</div>
+      <span>ChatOpen</span>
+    </div>
 
-    <div class="card profile-card">
+    <a href="chat.html" class="btn">
+      Retour au chat
+    </a>
 
-      <div id="avatar" class="avatar large">
+  </header>
+
+
+  <main class="profile-page">
+
+    <section class="card profile-card">
+
+      <div id="profileAvatar" class="profile-avatar">
         C
       </div>
 
-      <h1 id="name">Chargement...</h1>
+      <h1 id="profileUsername">
+        Chargement...
+      </h1>
 
-      <p id="id" class="muted">
-        ID ChatOpen : ...
+      <p id="profileEmail" class="muted">
+        Chargement...
       </p>
 
-      <label>Nom d'utilisateur</label>
+      <div class="profile-info">
 
-      <input
-        id="newName"
-        type="text"
-        maxlength="24"
-        placeholder="Nouveau nom"
-      >
+        <div class="info-item">
+          <span>Nom d'utilisateur</span>
+          <strong id="profileName">...</strong>
+        </div>
 
-      <button id="save" class="btn full">
-        Enregistrer
+        <div class="info-item">
+          <span>Identifiant ChatOpen</span>
+          <strong id="profileId">...</strong>
+        </div>
+
+      </div>
+
+      <button id="logoutButton" class="btn full">
+        Se déconnecter
       </button>
 
-      <p id="msg" class="success"></p>
-
-    </div>
+    </section>
 
   </main>
 
-  <script type="module" src="js/profils.js"></script>
+
+  <script type="module" src="js/profil.js"></script>
 
 </body>
+
 </html>
