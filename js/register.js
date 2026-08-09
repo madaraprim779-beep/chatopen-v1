@@ -19,7 +19,7 @@ import {
 
 
 // ==========================================
-// ELEMENTS HTML
+// ELEMENTS
 // ==========================================
 
 const form = document.getElementById("registerForm");
@@ -27,8 +27,18 @@ const errorBox = document.getElementById("error");
 const button = document.getElementById("registerButton");
 
 
+// Vérification
+if (!form) {
+  console.error("registerForm introuvable.");
+}
+
+if (!button) {
+  console.error("registerButton introuvable.");
+}
+
+
 // ==========================================
-// GENERER UN NUMERO CHATOPEN
+// GENERER L'ID CHATOPEN
 // ==========================================
 
 function genererChatOpenID() {
@@ -53,12 +63,11 @@ function nettoyerNom(nom) {
     .toLowerCase()
     .replace(/[^a-z0-9._-]/g, "")
     .substring(0, 24);
-
 }
 
 
 // ==========================================
-// FORMULAIRE
+// CREATION DU COMPTE
 // ==========================================
 
 form.addEventListener("submit", async (event) => {
@@ -72,7 +81,7 @@ form.addEventListener("submit", async (event) => {
 
 
   // ========================================
-  // RECUPERATION DES INFORMATIONS
+  // INFORMATIONS
   // ========================================
 
   const username = nettoyerNom(
@@ -87,7 +96,7 @@ form.addEventListener("submit", async (event) => {
 
 
   // ========================================
-  // VALIDATION DU NOM
+  // VALIDATION NOM
   // ========================================
 
   if (username.length < 3) {
@@ -119,7 +128,7 @@ form.addEventListener("submit", async (event) => {
 
 
   // ========================================
-  // CONFIRMATION MOT DE PASSE
+  // CONFIRMATION
   // ========================================
 
   if (password !== confirm) {
@@ -137,7 +146,7 @@ form.addEventListener("submit", async (event) => {
   try {
 
     // ======================================
-    // EMAIL TECHNIQUE POUR FIREBASE
+    // EMAIL TECHNIQUE FIREBASE
     // ======================================
 
     const email =
@@ -145,7 +154,7 @@ form.addEventListener("submit", async (event) => {
 
 
     // ======================================
-    // CREATION FIREBASE AUTHENTICATION
+    // CREATION FIREBASE AUTH
     // ======================================
 
     const credential =
@@ -154,7 +163,6 @@ form.addEventListener("submit", async (event) => {
         email,
         password
       );
-
 
     const user = credential.user;
 
@@ -168,7 +176,7 @@ form.addEventListener("submit", async (event) => {
 
 
     // ======================================
-    // CREATION PROFIL FIRESTORE
+    // PROFIL FIRESTORE
     // ======================================
 
     await setDoc(
@@ -194,11 +202,11 @@ form.addEventListener("submit", async (event) => {
 
 
     // ======================================
-    // COMPTE CREE
+    // SUCCES
     // ======================================
 
     console.log(
-      "Compte ChatOpen créé :",
+      "Compte ChatOpen créé avec succès.",
       chatId
     );
 
@@ -207,81 +215,76 @@ form.addEventListener("submit", async (event) => {
     // REDIRECTION
     // ======================================
 
-    window.location.replace("chat.html");
+    window.location.href = "chat.html";
 
 
-  } catch (error) {
+  } catch (err) {
 
     console.error(
-      "ERREUR CHATOPEN :",
-      error.code,
-      error.message
+      "CHATOPEN ERROR:",
+      err.code,
+      err.message
     );
 
 
     // ======================================
-    // MESSAGES D'ERREUR
+    // ERREURS FIREBASE
     // ======================================
 
-    if (error.code === "auth/email-already-in-use") {
+    switch (err.code) {
 
-      errorBox.textContent =
-        "Ce nom est déjà utilisé.";
+      case "auth/operation-not-allowed":
+
+        errorBox.textContent =
+          "Active Email/Password dans Firebase Authentication.";
+
+        break;
+
+
+      case "auth/email-already-in-use":
+
+        errorBox.textContent =
+          "Ce nom d'utilisateur est déjà utilisé.";
+
+        break;
+
+
+      case "auth/invalid-email":
+
+        errorBox.textContent =
+          "Firebase refuse l'adresse du compte.";
+
+        break;
+
+
+      case "auth/weak-password":
+
+        errorBox.textContent =
+          "Le mot de passe doit contenir au moins 6 caractères.";
+
+        break;
+
+
+      case "permission-denied":
+
+      case "firestore/permission-denied":
+
+        errorBox.textContent =
+          "Firestore bloque l'enregistrement du profil.";
+
+        break;
+
+
+      default:
+
+        errorBox.textContent =
+          err.code + " : " + err.message;
 
     }
 
-    else if (
-      error.code === "auth/operation-not-allowed"
-    ) {
-
-      errorBox.textContent =
-        "Email/Password n'est pas activé dans Firebase.";
-
-    }
-
-    else if (
-      error.code === "auth/invalid-email"
-    ) {
-
-      errorBox.textContent =
-        "Firebase refuse cette adresse.";
-
-    }
-
-    else if (
-      error.code === "auth/weak-password"
-    ) {
-
-      errorBox.textContent =
-        "Le mot de passe est trop faible.";
-
-    }
-
-    else if (
-      error.code === "permission-denied"
-    ) {
-
-      errorBox.textContent =
-        "Firestore refuse l'accès. Vérifie les règles.";
-
-    }
-
-    else {
-
-      errorBox.textContent =
-        error.code + " : " + error.message;
-
-    }
-
-
-    // ======================================
-    // REACTIVER LE BOUTON
-    // ======================================
 
     button.disabled = false;
-
-    button.textContent =
-      "Créer mon compte";
+    button.textContent = "Créer mon compte";
 
   }
 
