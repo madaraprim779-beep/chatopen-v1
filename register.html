@@ -3,16 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Créer un compte - ChatOpen</title>
+
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
+
   <main class="auth">
+
     <div class="card">
+
       <div class="logo small">C</div>
 
       <h1>Créer un compte</h1>
+
       <p class="muted">
         Rejoins ChatOpen en quelques secondes.
       </p>
@@ -24,6 +30,7 @@
           type="text"
           placeholder="Nom d'utilisateur"
           maxlength="24"
+          autocomplete="username"
           required
         >
 
@@ -32,6 +39,7 @@
           type="password"
           placeholder="Mot de passe"
           minlength="6"
+          autocomplete="new-password"
           required
         >
 
@@ -40,23 +48,32 @@
           type="password"
           placeholder="Confirmer le mot de passe"
           minlength="6"
+          autocomplete="new-password"
           required
         >
 
-        <button class="btn full" type="submit">
+        <button
+          class="btn full"
+          type="submit"
+          id="registerButton"
+        >
           Créer mon compte
         </button>
 
         <p id="error" class="error"></p>
+
       </form>
 
       <p class="bottom-text">
         Déjà un compte ?
         <a href="login.html">Se connecter</a>
       </p>
+
     </div>
+
   </main>
 
-  <script type="module" src="js/register.js"></script>
+  <script type="module" src="js/register-new.js"></script>
+
 </body>
 </html>
