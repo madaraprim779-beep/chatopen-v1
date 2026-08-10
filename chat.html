@@ -1,97 +1,133 @@
-<!DOCTYPE html>
-<html lang="fr">
-
-<head>
+<!DOCTYPE html><html lang="fr"><head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>ChatOpen</title>  <link rel="stylesheet" href="style.css">
+</head><body>  <div class="chat-app"><!-- EN-TÊTE -->
+<header class="chat-header">
 
-  <title>ChatOpen</title>
+  <button
+    id="backButton"
+    class="header-button"
+    type="button"
+    aria-label="Retour"
+  >
+    ←
+  </button>
 
-  <link rel="stylesheet" href="css/style.css">
-</head>
+  <div class="chat-user">
 
-<body>
-
-  <header class="topbar">
-
-    <div class="brand">
-      <div class="logo small">C</div>
-      <span>ChatOpen</span>
+    <div
+      id="chatUserAvatar"
+      class="chat-avatar"
+    >
+      ?
     </div>
 
-    <nav>
-      <a href="profils.html">Profil</a>
-      <a href="settings.html">Paramètres</a>
-    </nav>
+    <div class="chat-user-info">
+      <h2 id="chatUserName">Conversation</h2>
+      <span id="chatUserNumber"></span>
+    </div>
 
-  </header>
+  </div>
 
-  <main class="chat-layout">
+  <button
+    id="themeButton"
+    class="header-button"
+    type="button"
+    aria-label="Changer le thème"
+    title="Changer le thème"
+  >
+    🎨
+  </button>
 
-    <aside class="users-panel">
+</header>
 
-      <h2>Discussions</h2>
 
-      <input
-        id="searchUser"
-        type="text"
-        placeholder="Rechercher..."
-      >
+<!-- MESSAGES -->
+<main
+  id="messagesContainer"
+  class="messages-container"
+>
 
-      <div id="usersList">
-        <p class="muted">Aucun utilisateur pour le moment.</p>
-      </div>
+  <div
+    id="emptyChat"
+    class="empty-chat"
+  >
+    <div class="empty-chat-icon">
+      💬
+    </div>
 
-    </aside>
+    <h3>Bienvenue sur ChatOpen</h3>
 
-    <section class="chat-panel">
+    <p>
+      Envoyez votre premier message.
+    </p>
+  </div>
 
-      <div class="chat-header">
-        <div>
-          <h2 id="chatTitle">ChatOpen</h2>
-          <p id="chatStatus" class="muted">
-            Sélectionne une discussion
-          </p>
-        </div>
-      </div>
+</main>
 
-      <div id="messages" class="messages">
-        <div class="empty-chat">
-          <div class="logo">C</div>
-          <h2>Bienvenue sur ChatOpen</h2>
-          <p class="muted">
-            Sélectionne un utilisateur pour commencer une discussion.
-          </p>
-        </div>
-      </div>
 
-      <form id="messageForm" class="message-form">
+<!-- ZONE D'ÉCRITURE -->
+<form
+  id="messageForm"
+  class="message-form"
+>
 
-        <input
-          id="messageInput"
-          type="text"
-          placeholder="Écrire un message..."
-          autocomplete="off"
-          disabled
-        >
+  <button
+    type="button"
+    id="emojiButton"
+    class="message-action"
+    aria-label="Emoji"
+  >
+    😊
+  </button>
 
-        <button
-          id="sendButton"
-          class="btn"
-          type="submit"
-          disabled
-        >
-          Envoyer
-        </button>
+  <input
+    type="text"
+    id="messageInput"
+    placeholder="Écrire un message..."
+    autocomplete="off"
+  >
 
-      </form>
+  <button
+    type="submit"
+    id="sendButton"
+    class="send-button"
+    aria-label="Envoyer"
+  >
+    ➤
+  </button>
 
-    </section>
+</form>
 
-  </main>
+  </div>  <!-- MODALE DES THÈMES -->  <div
+    id="themeModal"
+    class="theme-modal hidden"
+  ><div class="theme-modal-content">
 
-  <script type="module" src="js/chat.js"></script>
+  <div class="theme-modal-header">
 
-</body>
+    <div>
+      <h2>Thème de la conversation</h2>
+      <p>Choisissez votre apparence</p>
+    </div>
 
-</html>
+    <button
+      id="closeThemeButton"
+      class="close-theme-button"
+      type="button"
+    >
+      ×
+    </button>
+
+  </div>
+
+
+  <div
+    id="themeList"
+    class="theme-list"
+  >
+  </div>
+
+</div>
+
+  </div>  <!-- SCRIPT PRINCIPAL -->  <script type="module" src="js/chat.js"></script></body></html>
