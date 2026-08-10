@@ -1,23 +1,39 @@
-/* ================================
-CHATOPEN — STYLE PROFESSIONNEL
-================================ */
+/* =========================================
+CHATOPEN — STYLE.CSS
+Écran d'accueil + logo 3D
+========================================= */
 
 :root {
---bg-dark: #080c14;
---bg-card: #111827;
---primary-blue: #00cfff;
---primary-purple: #8b5cf6;
---text-main: #ffffff;
---text-muted: #94a3b8;
---border-color: rgba(255, 255, 255, 0.09);
---shadow: rgba(0, 0, 0, 0.45);
+--bg: #050912;
+--bg-soft: #0b1220;
+
+--blue: #00cfff;
+--blue-dark: #0878ff;
+--violet: #8b4dff;
+
+--white: #ffffff;
+--muted: #8d9aae;
+
+--border: rgba(255, 255, 255, 0.09);
 }
+
+/* =========================================
+RESET
+========================================= */
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  
+  font-family:
+  Inter,
+  -apple-system,
+  BlinkMacSystemFont,
+  "Segoe UI",
+  Roboto,
+  Arial,
+  sans-serif;
   }
 
 html,
@@ -29,128 +45,178 @@ height: 100%;
 body {
 background:
 radial-gradient(
-circle at 50% -10%,
-rgba(0, 207, 255, 0.14),
-transparent 38%
+circle at 50% 10%,
+rgba(0, 207, 255, 0.12),
+transparent 35%
 ),
-#080c14;
+radial-gradient(
+circle at 80% 70%,
+rgba(139, 77, 255, 0.09),
+transparent 30%
+),
+var(--bg);
 
-color: var(--text-main);
-display: flex;
-justify-content: center;
-align-items: center;
+color: var(--white);
+
 overflow: hidden;
 }
 
-/* ================================
-CONTENEUR
-================================ */
+/* =========================================
+APPLICATION
+========================================= */
 
 .app-container {
+position: relative;
+
 width: 100%;
 max-width: 430px;
 height: 100dvh;
-min-height: 600px;
 
-position: relative;
+margin: auto;
 
 display: flex;
 flex-direction: column;
-justify-content: space-between;
+align-items: center;
 
 padding: 42px 24px 24px;
 
+overflow: hidden;
+
 background:
-radial-gradient(
-circle at 50% 15%,
-rgba(30, 64, 175, 0.18),
-transparent 45%
-),
 linear-gradient(
 180deg,
-#101827 0%,
-#080c14 75%
+rgba(17, 27, 45, 0.96),
+rgba(5, 9, 18, 0.99)
 );
-
-overflow: hidden;
 }
 
-/* ================================
-LUMIÈRE D'ARRIÈRE-PLAN
-================================ */
+/* Lumière d'ambiance */
 
 .app-container::before {
 content: "";
+
 position: absolute;
 
-width: 260px;
-height: 260px;
+width: 280px;
+height: 280px;
 
-top: -120px;
+top: -130px;
 left: 50%;
 
 transform: translateX(-50%);
 
-background: rgba(0, 207, 255, 0.12);
+background: rgba(0, 207, 255, 0.14);
+
+filter: blur(90px);
+
+pointer-events: none;
+}
+
+.app-container::after {
+content: "";
+
+position: absolute;
+
+width: 220px;
+height: 220px;
+
+right: -120px;
+bottom: 80px;
+
+background: rgba(139, 77, 255, 0.10);
 
 filter: blur(80px);
 
 pointer-events: none;
 }
 
-/* ================================
-BRAND
-================================ */
+/* =========================================
+LOGO / BRAND
+========================================= */
 
 .brand-section {
 position: relative;
 z-index: 2;
 
+width: 100%;
+
 display: flex;
 flex-direction: column;
 align-items: center;
 
-margin-top: 55px;
+margin-top: 45px;
+
+text-align: center;
 }
 
+/* Icône */
+
 .logo-img {
-width: 92px;
-height: 92px;
+width: 112px;
+height: 112px;
 
 object-fit: contain;
 
 margin-bottom: 20px;
 
+border-radius: 25px;
+
 filter:
-drop-shadow(0 0 18px rgba(0, 207, 255, 0.25))
-drop-shadow(0 8px 20px rgba(0, 0, 0, 0.35));
+drop-shadow(
+0 12px 25px rgba(0, 0, 0, 0.55)
+)
+drop-shadow(
+0 0 22px rgba(0, 207, 255, 0.16)
+);
 
-animation: logoFloat 4s ease-in-out infinite;
+transition:
+transform 0.25s ease,
+filter 0.25s ease;
 }
 
-@keyframes logoFloat {
-0%,
-100% {
-transform: translateY(0);
+.logo-img:hover {
+transform: translateY(-3px) scale(1.02);
+
+filter:
+drop-shadow(
+0 16px 30px rgba(0, 0, 0, 0.6)
+)
+drop-shadow(
+0 0 28px rgba(0, 207, 255, 0.22)
+);
 }
 
-50% {
-transform: translateY(-5px);
-}
-}
+/* =========================================
+NOM CHATOPEN
+========================================= */
 
 .brand-title {
-font-size: 31px;
+font-size: 32px;
+
+line-height: 1.1;
+
 font-weight: 750;
 
-letter-spacing: -0.5px;
+letter-spacing: -0.8px;
 
+color: var(--white);
+}
+
+/* Chat */
+
+.brand-title .chat {
+color: #ffffff;
+}
+
+/* Open */
+
+.brand-title .open {
 background:
 linear-gradient(
-120deg,
-#ffffff 20%,
-#7dd3fc 55%,
-#a78bfa 100%
+110deg,
+var(--blue),
+#268cff,
+var(--violet)
 );
 
 -webkit-background-clip: text;
@@ -159,122 +225,174 @@ background-clip: text;
 -webkit-text-fill-color: transparent;
 }
 
+/* =========================================
+SLOGAN
+========================================= */
+
+.slogan {
+display: flex;
+align-items: center;
+justify-content: center;
+
+gap: 7px;
+
+margin-top: 13px;
+
+color: #dce4ee;
+
+font-size: 9px;
+
+font-weight: 600;
+
+letter-spacing: 1.2px;
+
+white-space: nowrap;
+}
+
+.slogan .dash-blue {
+width: 13px;
+height: 2px;
+
+border-radius: 10px;
+
+background: var(--blue);
+}
+
+.slogan .dash-violet {
+width: 13px;
+height: 2px;
+
+border-radius: 10px;
+
+background: var(--violet);
+}
+
+/* =========================================
+SOUS-TEXTE
+========================================= */
+
 .brand-tagline {
-margin-top: 8px;
+margin-top: 10px;
 
 max-width: 280px;
 
-color: var(--text-muted);
+color: var(--muted);
 
-font-size: 13px;
+font-size: 12px;
+
 line-height: 1.5;
 
 text-align: center;
-
-letter-spacing: 0.15px;
 }
 
-/* ================================
-BOUTONS
-================================ */
+/* =========================================
+ACTIONS
+========================================= */
 
 .actions-section {
 position: relative;
-z-index: 2;
+z-index: 3;
 
 width: 100%;
+
+margin-top: auto;
+margin-bottom: 28px;
 
 display: flex;
 flex-direction: column;
 
 gap: 12px;
-
-margin-bottom: 28px;
 }
+
+/* =========================================
+BOUTONS
+========================================= */
 
 .btn {
 width: 100%;
+min-height: 55px;
 
-min-height: 54px;
+border: none;
+outline: none;
 
 border-radius: 16px;
 
 padding: 15px 18px;
 
-border: none;
-outline: none;
-
 font-size: 15px;
+
 font-weight: 650;
+
+color: white;
 
 cursor: pointer;
 
 transition:
 transform 0.2s ease,
-opacity 0.2s ease,
 box-shadow 0.2s ease,
-background 0.2s ease;
+opacity 0.2s ease;
 
 -webkit-tap-highlight-color: transparent;
 }
 
 .btn:active {
-transform: scale(0.98);
+transform: scale(0.97);
 }
 
-/* ================================
+/* =========================================
 BOUTON PRINCIPAL
-================================ */
+========================================= */
 
 .btn-primary {
-color: #ffffff;
-
 background:
 linear-gradient(
-135deg,
+120deg,
 #00cfff 0%,
-#168cff 45%,
-#8b5cf6 100%
+#148dff 45%,
+#8b4dff 100%
 );
 
 box-shadow:
-0 10px 30px rgba(0, 140, 255, 0.20),
-0 5px 15px rgba(139, 92, 246, 0.15);
+0 10px 25px rgba(0, 150, 255, 0.20),
+0 5px 20px rgba(139, 77, 255, 0.14);
 }
 
 .btn-primary:hover {
 transform: translateY(-2px);
 
 box-shadow:
-0 14px 35px rgba(0, 140, 255, 0.28),
-0 8px 20px rgba(139, 92, 246, 0.22);
+0 14px 32px rgba(0, 150, 255, 0.28),
+0 8px 24px rgba(139, 77, 255, 0.20);
 }
 
-/* ================================
+/* =========================================
 BOUTON SECONDAIRE
-================================ */
+========================================= */
 
 .btn-outline {
-color: #f8fafc;
+background:
+rgba(255, 255, 255, 0.035);
 
-background: rgba(255, 255, 255, 0.025);
+border: 1px solid var(--border);
 
-border: 1px solid var(--border-color);
+color: #f5f7fa;
 
-backdrop-filter: blur(12px);
+backdrop-filter: blur(15px);
 }
 
 .btn-outline:hover {
-background: rgba(255, 255, 255, 0.06);
+background:
+rgba(255, 255, 255, 0.065);
 
-border-color: rgba(255, 255, 255, 0.16);
+border-color:
+rgba(255, 255, 255, 0.15);
 
 transform: translateY(-2px);
 }
 
-/* ================================
+/* =========================================
 FOOTER
-================================ */
+========================================= */
 
 .footer-section {
 position: relative;
@@ -286,30 +404,31 @@ align-items: center;
 
 gap: 11px;
 
-color: #64748b;
+color: #66758a;
 
-font-size: 11px;
+font-size: 10px;
 }
 
 .ai-powered {
-font-size: 9px;
-
-text-transform: uppercase;
+font-size: 8px;
 
 letter-spacing: 1.5px;
+
+text-transform: uppercase;
 
 opacity: 0.75;
 }
 
 .footer-links {
 display: flex;
+
 align-items: center;
 
 gap: 18px;
 }
 
 .footer-links a {
-color: #64748b;
+color: #66758a;
 
 text-decoration: none;
 
@@ -317,35 +436,42 @@ transition: color 0.2s ease;
 }
 
 .footer-links a:hover {
-color: var(--primary-blue);
+color: var(--blue);
 }
 
-/* ================================
-PETITS ÉCRANS
-================================ */
+/* =========================================
+RESPONSIVE — PETITS ÉCRANS
+========================================= */
 
 @media (max-height: 700px) {
 
 .app-container {
-padding-top: 25px;
+padding-top: 24px;
 }
 
 .brand-section {
-margin-top: 20px;
+margin-top: 15px;
 }
 
 .logo-img {
-width: 72px;
-height: 72px;
-margin-bottom: 12px;
+width: 82px;
+height: 82px;
+
+margin-bottom: 14px;
+
 }
 
 .brand-title {
-font-size: 26px;
+font-size: 27px;
+}
+
+.slogan {
+margin-top: 9px;
+font-size: 8px;
 }
 
 .actions-section {
-margin-bottom: 18px;
+margin-bottom: 17px;
 }
 
 .btn {
@@ -353,21 +479,26 @@ min-height: 50px;
 }
 }
 
-/* ================================
-ÉCRANS PLUS LARGES
-================================ */
+/* =========================================
+TABLETTES / GRAND ÉCRAN
+========================================= */
 
 @media (min-width: 700px) {
+
+body {
+padding: 20px;
+}
 
 .app-container {
 height: min(892px, 100vh);
 
-border-radius: 28px;
+border-radius: 30px;
+
+border:
+  1px solid rgba(255, 255, 255, 0.06);
 
 box-shadow:
-  0 30px 80px var(--shadow);
-
-border: 1px solid rgba(255, 255, 255, 0.05);
+  0 30px 80px rgba(0, 0, 0, 0.55);
 
 }
 }
