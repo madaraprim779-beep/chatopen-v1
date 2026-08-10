@@ -1,81 +1,73 @@
-<!DOCTYPE html>
-<html lang="fr">
-
+<!DOCTYPE html><html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Créer un compte — ChatOpen</title>
+  <link rel="stylesheet" href="style.css">
+</head><body class="auth-page">  <main class="auth-container"><div class="auth-logo">
+  <div class="logo-circle">C</div>
+  <h1>ChatOpen</h1>
+  <p>Discutez simplement avec vos proches.</p>
+</div>
 
-  <title>Créer un compte - ChatOpen</title>
+<section class="auth-card">
 
-  <link rel="stylesheet" href="css/style.css">
-</head>
+  <h2>Créer votre compte</h2>
+  <p class="auth-subtitle">
+    Rejoignez ChatOpen gratuitement
+  </p>
 
-<body>
+  <form id="registerForm">
 
-  <main class="auth">
-
-    <div class="card">
-
-      <div class="logo small">C</div>
-
-      <h1>Créer un compte</h1>
-
-      <p class="muted">
-        Rejoins ChatOpen en quelques secondes.
-      </p>
-
-      <form id="registerForm">
-
-        <input
-          id="username"
-          type="text"
-          placeholder="Nom d'utilisateur"
-          maxlength="24"
-          autocomplete="username"
-          required
-        >
-
-        <input
-          id="password"
-          type="password"
-          placeholder="Mot de passe"
-          minlength="6"
-          autocomplete="new-password"
-          required
-        >
-
-        <input
-          id="confirm"
-          type="password"
-          placeholder="Confirmer le mot de passe"
-          minlength="6"
-          autocomplete="new-password"
-          required
-        >
-
-        <button
-          id="registerButton"
-          class="btn full"
-          type="submit"
-        >
-          Créer mon compte
-        </button>
-
-        <p id="error" class="error"></p>
-
-      </form>
-
-      <p class="bottom-text">
-        Déjà un compte ?
-        <a href="login.html">Se connecter</a>
-      </p>
-
+    <div class="input-group">
+      <label for="name">Nom d'utilisateur</label>
+      <input
+        type="text"
+        id="name"
+        placeholder="Votre nom"
+        autocomplete="username"
+        required
+      >
     </div>
 
-  </main>
+    <div class="input-group">
+      <label for="password">Mot de passe</label>
+      <input
+        type="password"
+        id="password"
+        placeholder="Créer un mot de passe"
+        autocomplete="new-password"
+        minlength="6"
+        required
+      >
+    </div>
 
-  <script type="module" src="js/register.js"></script>
+    <div class="input-group">
+      <label for="confirmPassword">Confirmer le mot de passe</label>
+      <input
+        type="password"
+        id="confirmPassword"
+        placeholder="Confirmer votre mot de passe"
+        autocomplete="new-password"
+        minlength="6"
+        required
+      >
+    </div>
 
-</body>
+    <p id="registerMessage" class="form-message"></p>
 
+    <button type="submit" class="auth-button">
+      Créer mon compte
+    </button>
+
+  </form>
+
+  <div class="auth-footer">
+    <span>Vous avez déjà un compte ?</span>
+    <a href="index.html">Se connecter</a>
+  </div>
+
+</section>
+
+  </main>  <script type="module" src="js/auth.js"></script></body>
 </html>
