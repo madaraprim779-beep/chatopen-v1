@@ -1,625 +1,392 @@
 <!DOCTYPE html><html lang="fr"><head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>ChatOpen — Conversation</title>  <link rel="stylesheet" href="style.css">
-</head><body>  <div class="chat-app"><!-- =========================
-     BARRE DU HAUT
-========================== -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">  <title>ChatOpen</title>  <link rel="stylesheet" href="style.css">
+</head><body><div class="chat-app">  <!-- ================= HEADER ================= -->  <header class="chat-topbar"><button
+  id="backButton"
+  class="icon-btn"
+  type="button"
+  aria-label="Retour">
+  ‹
+</button>
 
-<header class="chat-header">
-
-  <button
-    id="backButton"
-    class="header-button"
-    type="button"
-    aria-label="Retour"
-  >
-    ←
-  </button>
-
-
-  <div class="chat-user">
-
-    <div
-      id="chatUserAvatar"
-      class="chat-avatar"
-    >
-      ?
-    </div>
-
-
-    <div class="chat-user-info">
-
-      <h2 id="chatUserName">
-        Conversation
-      </h2>
-
-      <span id="chatUserNumber">
-      </span>
-
-    </div>
-
-  </div>
-
-
-  <div class="chat-header-actions">
-
-    <!-- APPEL VOCAL -->
-
-    <button
-      id="audioCallButton"
-      class="header-button"
-      type="button"
-      aria-label="Appel vocal"
-    >
-      📞
-    </button>
-
-
-    <!-- APPEL VIDÉO -->
-
-    <button
-      id="videoCallButton"
-      class="header-button"
-      type="button"
-      aria-label="Appel vidéo"
-    >
-      📹
-    </button>
-
-
-    <!-- THÈME -->
-
-    <button
-      id="themeButton"
-      class="header-button"
-      type="button"
-      aria-label="Thème"
-    >
-      🎨
-    </button>
-
-  </div>
-
-</header>
-
-
-
-<!-- =========================
-     MESSAGES
-========================== -->
-
-<main
-  id="messagesContainer"
-  class="messages-container"
->
+<div class="conversation-user">
 
   <div
-    id="emptyChat"
-    class="empty-chat"
-  >
+    id="chatUserAvatar"
+    class="conversation-avatar">
+    ?
+  </div>
 
-    <div class="empty-chat-icon">
-      💬
-    </div>
+  <div class="conversation-details">
 
-    <h3>
-      Nouvelle conversation
-    </h3>
+    <strong id="chatUserName">
+      Conversation
+    </strong>
 
-    <p>
-      Envoyez votre premier message.
-    </p>
+    <span id="chatUserNumber">
+    </span>
 
   </div>
 
-</main>
+</div>
 
+<div class="topbar-actions">
 
+  <button
+    id="audioCallButton"
+    class="icon-btn"
+    type="button"
+    aria-label="Appel vocal">
+    <span>☎</span>
+  </button>
 
-<!-- =========================
-     CLAVIER EMOJI
-========================== -->
+  <button
+    id="videoCallButton"
+    class="icon-btn"
+    type="button"
+    aria-label="Appel vidéo">
+    <span>▣</span>
+  </button>
+
+  <button
+    id="themeButton"
+    class="icon-btn"
+    type="button"
+    aria-label="Thème">
+    <span>◐</span>
+  </button>
+
+</div>
+
+  </header>  <!-- ================= CHAT ================= -->  <main
+    id="messagesContainer"
+    class="messages"><div
+  id="emptyChat"
+  class="empty-conversation">
+
+  <div class="empty-icon">
+    💬
+  </div>
+
+  <strong>
+    Aucun message
+  </strong>
+
+  <span>
+    Commencez la conversation.
+  </span>
+
+</div>
+
+  </main>  <!-- ================= EMOJI PANEL ================= -->  <section
+    id="emojiPanel"
+    class="emoji-panel"
+    hidden><div
+  id="emojiCategories"
+  class="emoji-tabs">
+</div>
 
 <div
-  id="emojiPanel"
-  class="chatopen-emoji-panel"
-  hidden
->
-
-  <div
-    id="emojiCategories"
-    class="emoji-categories"
-  >
-  </div>
-
-
-  <div
-    id="emojiGrid"
-    class="emoji-grid"
-  >
-  </div>
-
+  id="emojiGrid"
+  class="emoji-grid">
 </div>
 
+  </section>  <!-- ================= COMPOSER ================= -->  <form
+    id="messageForm"
+    class="composer"><button
+  id="emojiButton"
+  class="composer-icon"
+  type="button"
+  aria-label="Emojis">
+  ☺
+</button>
 
+<input
+  id="messageInput"
+  type="text"
+  placeholder="Message"
+  autocomplete="off"
+  maxlength="5000">
 
-<!-- =========================
-     ZONE D'ÉCRITURE
-========================== -->
+<button
+  id="sendButton"
+  class="send-btn"
+  type="submit"
+  aria-label="Envoyer">
+  ↑
+</button>
 
-<form
-  id="messageForm"
-  class="message-form"
->
+  </form></div><!-- ================= THEME ================= --><div
+  id="themeModal"
+  class="modal-overlay hidden">  <section class="theme-sheet"><div class="sheet-header">
 
-  <!-- EMOJIS -->
+  <div>
+    <strong>Thème</strong>
+    <span>Personnalisez cette conversation</span>
+  </div>
 
   <button
-    id="emojiButton"
-    class="message-action"
-    type="button"
-    aria-label="Emojis ChatOpen"
-  >
-    😊
+    id="closeThemeButton"
+    class="sheet-close"
+    type="button">
+    ×
   </button>
-
-
-  <!-- MESSAGE -->
-
-  <input
-    id="messageInput"
-    type="text"
-    placeholder="Écrire un message..."
-    autocomplete="off"
-    maxlength="5000"
-  >
-
-
-  <!-- ENVOYER -->
-
-  <button
-    id="sendButton"
-    class="send-button"
-    type="submit"
-    aria-label="Envoyer"
-  >
-    ➤
-  </button>
-
-</form>
-
-  </div>  <!-- =====================================================
-       FENÊTRE DES THÈMES
-  ====================================================== -->  <div
-    id="themeModal"
-    class="theme-modal hidden"
-  ><div class="theme-modal-content">
-
-  <div class="theme-modal-header">
-
-    <div>
-
-      <h2>
-        Thème de la conversation
-      </h2>
-
-      <p>
-        Choisissez votre thème
-      </p>
-
-    </div>
-
-
-    <button
-      id="closeThemeButton"
-      class="close-theme-button"
-      type="button"
-    >
-      ×
-    </button>
-
-  </div>
-
-
-  <div
-    id="themeList"
-    class="theme-list"
-  >
-  </div>
 
 </div>
 
-  </div>  <!-- =====================================================
-       FENÊTRE D'APPEL
-  ====================================================== -->  <div
-    id="callModal"
-    class="call-modal hidden"
-  ><div class="call-screen">
-
-
-  <!-- VIDÉO DISTANTE -->
-
-  <video
-    id="remoteVideo"
-    class="remote-video"
-    autoplay
-    playsinline
-  >
-  </video>
-
-
-  <!-- VIDÉO LOCALE -->
-
-  <video
-    id="localVideo"
-    class="local-video"
-    autoplay
-    muted
-    playsinline
-  >
-  </video>
-
-
-  <!-- INFORMATIONS -->
-
-  <div class="call-information">
-
-    <h2 id="callTitle">
-      Appel
-    </h2>
-
-    <p id="callStatus">
-      Connexion...
-    </p>
-
-  </div>
-
-
-  <!-- COMMANDES -->
-
-  <div class="call-controls">
-
-
-    <!-- ACCEPTER -->
-
-    <button
-      id="acceptCallButton"
-      class="call-control accept-call"
-      type="button"
-      aria-label="Accepter"
-    >
-      ✓
-    </button>
-
-
-    <!-- REFUSER -->
-
-    <button
-      id="rejectCallButton"
-      class="call-control reject-call"
-      type="button"
-      aria-label="Refuser"
-    >
-      ✕
-    </button>
-
-
-    <!-- MICRO -->
-
-    <button
-      id="muteButton"
-      class="call-control"
-      type="button"
-      aria-label="Micro"
-    >
-      🎙️
-    </button>
-
-
-    <!-- CAMÉRA -->
-
-    <button
-      id="cameraButton"
-      class="call-control"
-      type="button"
-      aria-label="Caméra"
-    >
-      📹
-    </button>
-
-
-    <!-- RACCROCHER -->
-
-    <button
-      id="endCallButton"
-      class="call-control end-call"
-      type="button"
-      aria-label="Raccrocher"
-    >
-      ☎
-    </button>
-
-  </div>
-
+<div
+  id="themeList"
+  class="theme-list">
 </div>
 
-  </div>  <!-- =====================================================
-       SCRIPTS
-  ====================================================== -->  <script type="module">
+  </section></div><!-- ================= APPEL ================= --><div
+  id="callModal"
+  class="call-modal hidden"><video
+id="remoteVideo"
+class="remote-video"
+autoplay
+playsinline>
+</video>
 
-    import {
-      CHATOPEN_EMOJI_CATEGORIES,
-      getEmojisByCategory,
-      createEmojiElement,
-      insertEmoji
-    } from "./js/emoji.js";
+<video
+id="localVideo"
+class="local-video"
+autoplay
+muted
+playsinline>
+</video>
+
+  <div class="call-info"><strong id="callTitle">
+  Appel
+</strong>
+
+<span id="callStatus">
+  Connexion...
+</span>
+
+  </div>  <div class="call-actions"><button
+  id="acceptCallButton"
+  class="call-btn accept"
+  type="button">
+  ✓
+</button>
+
+<button
+  id="rejectCallButton"
+  class="call-btn decline"
+  type="button">
+  ×
+</button>
+
+<button
+  id="muteButton"
+  class="call-btn"
+  type="button">
+  🎙
+</button>
+
+<button
+  id="cameraButton"
+  class="call-btn"
+  type="button">
+  ▣
+</button>
+
+<button
+  id="endCallButton"
+  class="call-btn decline"
+  type="button">
+  ☎
+</button>
+
+  </div></div><!-- ================= SCRIPTS ================= --><script type="module">
+
+  import {
+    CHATOPEN_EMOJI_CATEGORIES,
+    getEmojisByCategory,
+    createEmojiElement,
+    insertEmoji
+  } from "./js/emoji.js";
+
+  import {
+    startCall,
+    listenForIncomingCalls
+  } from "./js/calls.js";
 
 
-    import {
-      startCall,
-      listenForIncomingCalls
-    } from "./js/calls.js";
+  /* ---------- EMOJIS ---------- */
+
+  const emojiButton =
+    document.getElementById("emojiButton");
+
+  const emojiPanel =
+    document.getElementById("emojiPanel");
+
+  const emojiCategories =
+    document.getElementById("emojiCategories");
+
+  const emojiGrid =
+    document.getElementById("emojiGrid");
+
+  const messageInput =
+    document.getElementById("messageInput");
 
 
-    /* =========================
-       EMOJIS
-    ========================== */
+  function showEmojiCategory(category) {
 
-    const emojiButton =
-      document.getElementById(
-        "emojiButton"
-      );
+    emojiGrid.innerHTML = "";
 
+    getEmojisByCategory(category)
+      .forEach((emoji) => {
 
-    const emojiPanel =
-      document.getElementById(
-        "emojiPanel"
-      );
+        const button =
+          document.createElement("button");
 
+        button.type = "button";
 
-    const emojiCategories =
-      document.getElementById(
-        "emojiCategories"
-      );
+        button.className =
+          "emoji-item";
 
-
-    const emojiGrid =
-      document.getElementById(
-        "emojiGrid"
-      );
-
-
-    const messageInput =
-      document.getElementById(
-        "messageInput"
-      );
-
-
-    function renderEmojiCategory(
-      categoryId
-    ) {
-
-      emojiGrid.innerHTML = "";
-
-
-      const emojis =
-        getEmojisByCategory(
-          categoryId
+        button.appendChild(
+          createEmojiElement(emoji)
         );
 
+        button.addEventListener(
+          "click",
+          () => {
 
-      emojis.forEach(
-        (emoji) => {
-
-          const button =
-            document.createElement(
-              "button"
-            );
-
-
-          button.type =
-            "button";
-
-
-          button.className =
-            "emoji-item";
-
-
-          button.appendChild(
-            createEmojiElement(
+            insertEmoji(
+              messageInput,
               emoji
-            )
-          );
-
-
-          button.addEventListener(
-            "click",
-            () => {
-
-              insertEmoji(
-                messageInput,
-                emoji
-              );
-
-              messageInput.focus();
-
-            }
-          );
-
-
-          emojiGrid.appendChild(
-            button
-          );
-
-        }
-      );
-
-    }
-
-
-    CHATOPEN_EMOJI_CATEGORIES
-      .forEach(
-        (category, index) => {
-
-          const button =
-            document.createElement(
-              "button"
             );
 
-
-          button.type =
-            "button";
-
-
-          button.className =
-            "emoji-category-button";
-
-
-          button.textContent =
-            category.name;
-
-
-          button.addEventListener(
-            "click",
-            () => {
-
-              renderEmojiCategory(
-                category.id
-              );
-
-            }
-          );
-
-
-          emojiCategories
-            .appendChild(
-              button
-            );
-
-
-          if (index === 0) {
-
-            renderEmojiCategory(
-              category.id
-            );
+            messageInput.focus();
 
           }
+        );
+
+        emojiGrid.appendChild(button);
+
+      });
+
+  }
+
+
+  CHATOPEN_EMOJI_CATEGORIES
+    .forEach((category, index) => {
+
+      const button =
+        document.createElement("button");
+
+      button.type = "button";
+
+      button.className =
+        "emoji-tab";
+
+      button.textContent =
+        category.name;
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          showEmojiCategory(
+            category.id
+          );
 
         }
       );
 
+      emojiCategories.appendChild(button);
 
-    emojiButton.addEventListener(
+      if (index === 0) {
+
+        showEmojiCategory(
+          category.id
+        );
+
+      }
+
+    });
+
+
+  emojiButton.addEventListener(
+    "click",
+    () => {
+
+      emojiPanel.hidden =
+        !emojiPanel.hidden;
+
+    }
+  );
+
+
+  /* ---------- APPELS ---------- */
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const receiverId =
+    params.get("user");
+
+
+  document
+    .getElementById("audioCallButton")
+    ?.addEventListener(
       "click",
-      () => {
+      async () => {
 
-        emojiPanel.hidden =
-          !emojiPanel.hidden;
+        if (!receiverId) return;
+
+        try {
+
+          await startCall(
+            receiverId,
+            "audio"
+          );
+
+        } catch (error) {
+
+          console.error(error);
+
+        }
 
       }
     );
 
 
+  document
+    .getElementById("videoCallButton")
+    ?.addEventListener(
+      "click",
+      async () => {
 
-    /* =========================
-       APPELS
-    ========================== */
+        if (!receiverId) return;
 
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
+        try {
 
+          await startCall(
+            receiverId,
+            "video"
+          );
 
-    const receiverId =
-      params.get("user");
+        } catch (error) {
 
-
-    document
-      .getElementById(
-        "audioCallButton"
-      )
-      ?.addEventListener(
-        "click",
-        async () => {
-
-          if (!receiverId) {
-
-            alert(
-              "Utilisateur introuvable."
-            );
-
-            return;
-
-          }
-
-
-          try {
-
-            await startCall(
-              receiverId,
-              "audio"
-            );
-
-          } catch (error) {
-
-            console.error(error);
-
-            alert(
-              "Impossible de démarrer l'appel vocal."
-            );
-
-          }
+          console.error(error);
 
         }
-      );
+
+      }
+    );
 
 
-    document
-      .getElementById(
-        "videoCallButton"
-      )
-      ?.addEventListener(
-        "click",
-        async () => {
+  listenForIncomingCalls();
 
-          if (!receiverId) {
-
-            alert(
-              "Utilisateur introuvable."
-            );
-
-            return;
-
-          }
-
-
-          try {
-
-            await startCall(
-              receiverId,
-              "video"
-            );
-
-          } catch (error) {
-
-            console.error(error);
-
-            alert(
-              "Impossible de démarrer l'appel vidéo."
-            );
-
-          }
-
-        }
-      );
-
-
-    /* Appels entrants */
-
-    listenForIncomingCalls();
-
-  </script>  <!-- CHAT PRINCIPAL -->  <script
-    type="module"
-    src="js/chat.js"
-  ></script></body></html>
+</script><script
+  type="module"
+  src="js/chat.js">
+</script></body>
+</html>
