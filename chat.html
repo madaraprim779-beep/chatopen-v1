@@ -1,7 +1,10 @@
 <!DOCTYPE html><html lang="fr"><head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>ChatOpen</title>  <link rel="stylesheet" href="style.css">
-</head><body>  <div class="chat-app"><!-- EN-TÊTE -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>ChatOpen — Conversation</title>  <link rel="stylesheet" href="style.css">
+</head><body>  <div class="chat-app"><!-- =========================
+     BARRE DU HAUT
+========================== -->
+
 <header class="chat-header">
 
   <button
@@ -13,6 +16,7 @@
     ←
   </button>
 
+
   <div class="chat-user">
 
     <div
@@ -22,27 +26,68 @@
       ?
     </div>
 
+
     <div class="chat-user-info">
-      <h2 id="chatUserName">Conversation</h2>
-      <span id="chatUserNumber"></span>
+
+      <h2 id="chatUserName">
+        Conversation
+      </h2>
+
+      <span id="chatUserNumber">
+      </span>
+
     </div>
 
   </div>
 
-  <button
-    id="themeButton"
-    class="header-button"
-    type="button"
-    aria-label="Changer le thème"
-    title="Changer le thème"
-  >
-    🎨
-  </button>
+
+  <div class="chat-header-actions">
+
+    <!-- APPEL VOCAL -->
+
+    <button
+      id="audioCallButton"
+      class="header-button"
+      type="button"
+      aria-label="Appel vocal"
+    >
+      📞
+    </button>
+
+
+    <!-- APPEL VIDÉO -->
+
+    <button
+      id="videoCallButton"
+      class="header-button"
+      type="button"
+      aria-label="Appel vidéo"
+    >
+      📹
+    </button>
+
+
+    <!-- THÈME -->
+
+    <button
+      id="themeButton"
+      class="header-button"
+      type="button"
+      aria-label="Thème"
+    >
+      🎨
+    </button>
+
+  </div>
 
 </header>
 
 
-<!-- MESSAGES -->
+
+<!-- =========================
+     MESSAGES
+========================== -->
+
 <main
   id="messagesContainer"
   class="messages-container"
@@ -52,46 +97,90 @@
     id="emptyChat"
     class="empty-chat"
   >
+
     <div class="empty-chat-icon">
       💬
     </div>
 
-    <h3>Bienvenue sur ChatOpen</h3>
+    <h3>
+      Nouvelle conversation
+    </h3>
 
     <p>
       Envoyez votre premier message.
     </p>
+
   </div>
 
 </main>
 
 
-<!-- ZONE D'ÉCRITURE -->
+
+<!-- =========================
+     CLAVIER EMOJI
+========================== -->
+
+<div
+  id="emojiPanel"
+  class="chatopen-emoji-panel"
+  hidden
+>
+
+  <div
+    id="emojiCategories"
+    class="emoji-categories"
+  >
+  </div>
+
+
+  <div
+    id="emojiGrid"
+    class="emoji-grid"
+  >
+  </div>
+
+</div>
+
+
+
+<!-- =========================
+     ZONE D'ÉCRITURE
+========================== -->
+
 <form
   id="messageForm"
   class="message-form"
 >
 
+  <!-- EMOJIS -->
+
   <button
-    type="button"
     id="emojiButton"
     class="message-action"
-    aria-label="Emoji"
+    type="button"
+    aria-label="Emojis ChatOpen"
   >
     😊
   </button>
 
+
+  <!-- MESSAGE -->
+
   <input
-    type="text"
     id="messageInput"
+    type="text"
     placeholder="Écrire un message..."
     autocomplete="off"
+    maxlength="5000"
   >
 
+
+  <!-- ENVOYER -->
+
   <button
-    type="submit"
     id="sendButton"
     class="send-button"
+    type="submit"
     aria-label="Envoyer"
   >
     ➤
@@ -99,7 +188,9 @@
 
 </form>
 
-  </div>  <!-- MODALE DES THÈMES -->  <div
+  </div>  <!-- =====================================================
+       FENÊTRE DES THÈMES
+  ====================================================== -->  <div
     id="themeModal"
     class="theme-modal hidden"
   ><div class="theme-modal-content">
@@ -107,9 +198,17 @@
   <div class="theme-modal-header">
 
     <div>
-      <h2>Thème de la conversation</h2>
-      <p>Choisissez votre apparence</p>
+
+      <h2>
+        Thème de la conversation
+      </h2>
+
+      <p>
+        Choisissez votre thème
+      </p>
+
     </div>
+
 
     <button
       id="closeThemeButton"
@@ -130,4 +229,397 @@
 
 </div>
 
-  </div>  <!-- SCRIPT PRINCIPAL -->  <script type="module" src="js/chat.js"></script></body></html>
+  </div>  <!-- =====================================================
+       FENÊTRE D'APPEL
+  ====================================================== -->  <div
+    id="callModal"
+    class="call-modal hidden"
+  ><div class="call-screen">
+
+
+  <!-- VIDÉO DISTANTE -->
+
+  <video
+    id="remoteVideo"
+    class="remote-video"
+    autoplay
+    playsinline
+  >
+  </video>
+
+
+  <!-- VIDÉO LOCALE -->
+
+  <video
+    id="localVideo"
+    class="local-video"
+    autoplay
+    muted
+    playsinline
+  >
+  </video>
+
+
+  <!-- INFORMATIONS -->
+
+  <div class="call-information">
+
+    <h2 id="callTitle">
+      Appel
+    </h2>
+
+    <p id="callStatus">
+      Connexion...
+    </p>
+
+  </div>
+
+
+  <!-- COMMANDES -->
+
+  <div class="call-controls">
+
+
+    <!-- ACCEPTER -->
+
+    <button
+      id="acceptCallButton"
+      class="call-control accept-call"
+      type="button"
+      aria-label="Accepter"
+    >
+      ✓
+    </button>
+
+
+    <!-- REFUSER -->
+
+    <button
+      id="rejectCallButton"
+      class="call-control reject-call"
+      type="button"
+      aria-label="Refuser"
+    >
+      ✕
+    </button>
+
+
+    <!-- MICRO -->
+
+    <button
+      id="muteButton"
+      class="call-control"
+      type="button"
+      aria-label="Micro"
+    >
+      🎙️
+    </button>
+
+
+    <!-- CAMÉRA -->
+
+    <button
+      id="cameraButton"
+      class="call-control"
+      type="button"
+      aria-label="Caméra"
+    >
+      📹
+    </button>
+
+
+    <!-- RACCROCHER -->
+
+    <button
+      id="endCallButton"
+      class="call-control end-call"
+      type="button"
+      aria-label="Raccrocher"
+    >
+      ☎
+    </button>
+
+  </div>
+
+</div>
+
+  </div>  <!-- =====================================================
+       SCRIPTS
+  ====================================================== -->  <script type="module">
+
+    import {
+      CHATOPEN_EMOJI_CATEGORIES,
+      getEmojisByCategory,
+      createEmojiElement,
+      insertEmoji
+    } from "./js/emoji.js";
+
+
+    import {
+      startCall,
+      listenForIncomingCalls
+    } from "./js/calls.js";
+
+
+    /* =========================
+       EMOJIS
+    ========================== */
+
+    const emojiButton =
+      document.getElementById(
+        "emojiButton"
+      );
+
+
+    const emojiPanel =
+      document.getElementById(
+        "emojiPanel"
+      );
+
+
+    const emojiCategories =
+      document.getElementById(
+        "emojiCategories"
+      );
+
+
+    const emojiGrid =
+      document.getElementById(
+        "emojiGrid"
+      );
+
+
+    const messageInput =
+      document.getElementById(
+        "messageInput"
+      );
+
+
+    function renderEmojiCategory(
+      categoryId
+    ) {
+
+      emojiGrid.innerHTML = "";
+
+
+      const emojis =
+        getEmojisByCategory(
+          categoryId
+        );
+
+
+      emojis.forEach(
+        (emoji) => {
+
+          const button =
+            document.createElement(
+              "button"
+            );
+
+
+          button.type =
+            "button";
+
+
+          button.className =
+            "emoji-item";
+
+
+          button.appendChild(
+            createEmojiElement(
+              emoji
+            )
+          );
+
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              insertEmoji(
+                messageInput,
+                emoji
+              );
+
+              messageInput.focus();
+
+            }
+          );
+
+
+          emojiGrid.appendChild(
+            button
+          );
+
+        }
+      );
+
+    }
+
+
+    CHATOPEN_EMOJI_CATEGORIES
+      .forEach(
+        (category, index) => {
+
+          const button =
+            document.createElement(
+              "button"
+            );
+
+
+          button.type =
+            "button";
+
+
+          button.className =
+            "emoji-category-button";
+
+
+          button.textContent =
+            category.name;
+
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              renderEmojiCategory(
+                category.id
+              );
+
+            }
+          );
+
+
+          emojiCategories
+            .appendChild(
+              button
+            );
+
+
+          if (index === 0) {
+
+            renderEmojiCategory(
+              category.id
+            );
+
+          }
+
+        }
+      );
+
+
+    emojiButton.addEventListener(
+      "click",
+      () => {
+
+        emojiPanel.hidden =
+          !emojiPanel.hidden;
+
+      }
+    );
+
+
+
+    /* =========================
+       APPELS
+    ========================== */
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+
+    const receiverId =
+      params.get("user");
+
+
+    document
+      .getElementById(
+        "audioCallButton"
+      )
+      ?.addEventListener(
+        "click",
+        async () => {
+
+          if (!receiverId) {
+
+            alert(
+              "Utilisateur introuvable."
+            );
+
+            return;
+
+          }
+
+
+          try {
+
+            await startCall(
+              receiverId,
+              "audio"
+            );
+
+          } catch (error) {
+
+            console.error(error);
+
+            alert(
+              "Impossible de démarrer l'appel vocal."
+            );
+
+          }
+
+        }
+      );
+
+
+    document
+      .getElementById(
+        "videoCallButton"
+      )
+      ?.addEventListener(
+        "click",
+        async () => {
+
+          if (!receiverId) {
+
+            alert(
+              "Utilisateur introuvable."
+            );
+
+            return;
+
+          }
+
+
+          try {
+
+            await startCall(
+              receiverId,
+              "video"
+            );
+
+          } catch (error) {
+
+            console.error(error);
+
+            alert(
+              "Impossible de démarrer l'appel vidéo."
+            );
+
+          }
+
+        }
+      );
+
+
+    /* Appels entrants */
+
+    listenForIncomingCalls();
+
+  </script>  <!-- CHAT PRINCIPAL -->  <script
+    type="module"
+    src="js/chat.js"
+  ></script></body></html>
