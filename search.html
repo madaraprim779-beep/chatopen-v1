@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="fr"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>Rechercher — ChatOpen</title>  <link rel="stylesheet" href="style.css">
+</head><body>  <main class="search-page"><header class="search-header">
+
+  <button
+    class="back-button"
+    onclick="history.back()"
+  >
+    ←
+  </button>
+
+  <div>
+    <h1>Rechercher</h1>
+    <p>Trouvez un utilisateur ChatOpen</p>
+  </div>
+
+</header>
+
+
+<section class="search-box">
+
+  <form id="searchForm">
+
+    <div class="search-input-container">
+
+      <span>🔎</span>
+
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Numéro ChatOpen : CO-123456"
+        autocomplete="off"
+        required
+      >
+
+    </div>
+
+    <button
+      type="submit"
+      class="search-button"
+    >
+      Rechercher
+    </button>
+
+  </form>
+
+</section>
+
+
+<section
+  id="searchResults"
+  class="search-results"
+>
+  <div class="search-empty">
+    Entrez le numéro ChatOpen d'une personne
+    pour commencer.
+  </div>
+</section>
+
+  </main>  <script type="module" src="js/search.js"></script></body></html>
