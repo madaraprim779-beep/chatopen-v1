@@ -1,239 +1,772 @@
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import {
+collection,
+doc,
+addDoc,
+query,
+orderBy,
+onSnapshot,
+getDoc,
+setDoc,
+serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
-  collection,
-  getDocs,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+auth,
+db
+} from "./firebase.js";
 
-import { auth, db } from "./firebase.js";
+import {
+getConversationTheme,
+saveConversationTheme,
+applyConversationTheme,
+renderThemeList
+} from "./themes.js";
 
-const usersList = document.getElementById("usersList");
-const searchUser = document.getElementById("searchUser");
-const messages = document.getElementById("messages");
-const messageForm = document.getElementById("messageForm");
-const messageInput = document.getElementById("messageInput");
-const sendButton = document.getElementById("sendButton");
+import {
+CHATOPEN_EMOJIS,
+CHATOPEN_EMOJI_CATEGORIES,
+getEmojisByCategory,
+createEmojiElement,
+insertEmoji,
+renderChatOpenEmojis
+} from "./emoji.js";
 
-let users = [];
+/* =========================================================
+ÉLÉMENTS HTML
+========================================================= */
+
+const messagesContainer =
+document.getElementById("messagesContainer");
+
+const messageForm =
+document.getElementById("messageForm");
+
+const messageInput =
+document.getElementById("messageInput");
+
+const chatUserName =
+document.getElementById("chatUserName");
+
+const chatUserNumber =
+document.getElementById("chatUserNumber");
+
+const chatUserAvatar =
+document.getElementById("chatUserAvatar");
+
+const emptyChat =
+document.getElementById("emptyChat");
+
+const backButton =
+document.getElementById("backButton");
+
+const themeButton =
+document.getElementById("themeButton");
+
+const themeModal =
+document.getElementById("themeModal");
+
+const closeThemeButton =
+document.getElementById("closeThemeButton");
+
+const themeList =
+document.getElementById("themeList");
+
+const emojiButton =
+document.getElementById("emojiButton");
+
+/* =========================================================
+VARIABLES
+========================================================= */
+
 let currentUser = null;
-let selectedUser = null;
+let otherUser = null;
+let conversationId = null;
 
+let unsubscribeMessages = null;
 
-// ===============================
-// VÉRIFICATION DE LA CONNEXION
-// ===============================
+let currentTheme = "default";
 
-onAuthStateChanged(auth, async (user) => {
+/* =========================================================
+UTILITAIRES
+========================================================= */
 
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
+function escapeHTML(value) {
 
-  currentUser = user;
+return String(value ?? "")
+.replaceAll("&", "&")
+.replaceAll("<", "<")
+.replaceAll(">", ">")
+.replaceAll('"', """)
+.replaceAll("'", "'");
 
-  await loadUsers();
+}
+
+function getOtherUserId() {
+
+const params =
+new URLSearchParams(window.location.search);
+
+return params.get("user");
+
+}
+
+/* =========================================================
+INITIALISATION
+========================================================= */
+
+auth.onAuthStateChanged(async (user) => {
+
+if (!user) {
+
+window.location.href = "index.html";
+
+return;
+
+}
+
+currentUser = user;
+
+const otherUserId =
+getOtherUserId();
+
+if (!otherUserId) {
+
+showEmptyConversation();
+
+return;
+
+}
+
+await loadOtherUser(otherUserId);
+
+conversationId =
+[currentUser.uid, otherUser.uid]
+.sort()
+.join("_");
+
+await loadConversationTheme();
+
+listenToMessages();
+
 });
 
+/* =========================================================
+UTILISATEUR DESTINATAIRE
+========================================================= */
 
-// ===============================
-// CHARGER LES UTILISATEURS
-// ===============================
+async function loadOtherUser(userId) {
 
-async function loadUsers() {
+const userRef =
+doc(db, "users", userId);
 
-  usersList.innerHTML =
-    '<p class="muted">Chargement...</p>';
+const snapshot =
+await getDoc(userRef);
 
-  try {
+if (!snapshot.exists()) {
 
-    const usersQuery = query(
-      collection(db, "users"),
-      orderBy("username")
-    );
+alert("Utilisateur introuvable.");
 
-    const snapshot = await getDocs(usersQuery);
+window.location.href =
+  "search.html";
 
-    users = [];
+return;
 
-    snapshot.forEach((document) => {
+}
 
-      const data = document.data();
+otherUser = {
+id: snapshot.id,
+...snapshot.data()
+};
 
-      if (document.id !== currentUser.uid) {
+updateChatHeader();
 
-        users.push({
-          id: document.id,
-          username: data.username || "Utilisateur"
-        });
+}
 
-      }
+function updateChatHeader() {
+
+chatUserName.textContent =
+otherUser.name || "Utilisateur";
+
+chatUserNumber.textContent =
+otherUser.chatOpenNumber || "";
+
+if (otherUser.photoURL) {
+
+chatUserAvatar.innerHTML = `
+  <img
+    src="${escapeHTML(otherUser.photoURL)}"
+    alt="Photo de profil"
+  >
+`;
+
+} else {
+
+chatUserAvatar.textContent =
+  (otherUser.name || "?")
+    .charAt(0)
+    .toUpperCase();
+
+}
+
+}
+
+/* =========================================================
+MESSAGES EN TEMPS RÉEL
+========================================================= */
+
+function listenToMessages() {
+
+if (!conversationId) return;
+
+if (unsubscribeMessages) {
+
+unsubscribeMessages();
+
+}
+
+const messagesRef =
+collection(
+db,
+"conversations",
+conversationId,
+"messages"
+);
+
+const messagesQuery =
+query(
+messagesRef,
+orderBy("createdAt", "asc")
+);
+
+/*
+onSnapshot permet de recevoir automatiquement
+les nouveaux messages sans actualiser la page.
+*/
+
+unsubscribeMessages =
+onSnapshot(
+messagesQuery,
+(snapshot) => {
+
+    messagesContainer.innerHTML = "";
+
+    if (snapshot.empty) {
+
+      showEmptyConversation();
+
+      return;
+    }
+
+    snapshot.forEach((messageDoc) => {
+
+      const message =
+        messageDoc.data();
+
+      renderMessage(
+        messageDoc.id,
+        message
+      );
 
     });
 
-    displayUsers(users);
+    scrollToBottom();
 
-  } catch (error) {
+  },
+  (error) => {
 
-    console.error(error);
+    console.error(
+      "Erreur temps réel :",
+      error
+    );
 
-    usersList.innerHTML =
-      '<p class="error">Impossible de charger les utilisateurs.</p>';
-  }
-}
-
-
-// ===============================
-// AFFICHER LES UTILISATEURS
-// ===============================
-
-function displayUsers(list) {
-
-  if (list.length === 0) {
-
-    usersList.innerHTML =
-      '<p class="muted">Aucun autre utilisateur.</p>';
-
-    return;
-  }
-
-  usersList.innerHTML = "";
-
-  list.forEach((user) => {
-
-    const button = document.createElement("button");
-
-    button.className = "user-item";
-
-    button.innerHTML = `
-      <div class="avatar">
-        ${user.username.charAt(0).toUpperCase()}
-      </div>
-
-      <div class="user-info">
-        <strong>${escapeHTML(user.username)}</strong>
-        <small>ChatOpen</small>
+    messagesContainer.innerHTML = `
+      <div class="chat-error">
+        Impossible de charger les messages.
       </div>
     `;
 
-    button.addEventListener("click", () => {
-      openChat(user);
-    });
+  }
+);
 
-    usersList.appendChild(button);
-  });
 }
 
+/* =========================================================
+AFFICHER UN MESSAGE
+========================================================= */
 
-// ===============================
-// OUVRIR UNE DISCUSSION
-// ===============================
+function renderMessage(id, message) {
 
-function openChat(user) {
+const isMine =
+message.senderId === currentUser.uid;
 
-  selectedUser = user;
+const messageElement =
+document.createElement("div");
 
-  document.getElementById("chatTitle").textContent =
-    user.username;
+messageElement.className =
+"message-row ${isMine ? "mine" : "other"}";
 
-  document.getElementById("chatStatus").textContent =
-    "Discussion ChatOpen";
+const bubble =
+document.createElement("div");
 
-  messages.innerHTML = `
-    <div class="empty-chat">
-      <div class="logo">C</div>
+bubble.className =
+"message-bubble ${isMine ? "mine" : "other"}";
 
-      <h2>${escapeHTML(user.username)}</h2>
+const content =
+document.createElement("div");
 
-      <p class="muted">
-        Commence une nouvelle discussion.
-      </p>
-    </div>
-  `;
+content.className =
+"message-content";
 
-  messageInput.disabled = false;
-  sendButton.disabled = false;
+/*
+Pour l'instant les messages texte sont échappés.
+Les codes :co:xxx: sont ensuite remplacés
+par les emojis ChatOpen.
+*/
 
-  messageInput.focus();
-}
+content.textContent =
+message.text || "";
 
+bubble.appendChild(content);
 
-// ===============================
-// RECHERCHE
-// ===============================
+const time =
+document.createElement("div");
 
-searchUser.addEventListener("input", () => {
+time.className =
+"message-time";
 
-  const search = searchUser.value
-    .trim()
-    .toLowerCase();
+if (message.createdAt?.toDate) {
 
-  const filtered = users.filter((user) =>
-    user.username.toLowerCase().includes(search)
+time.textContent =
+  formatTime(
+    message.createdAt.toDate()
   );
 
-  displayUsers(filtered);
-});
+}
+
+bubble.appendChild(time);
+
+messageElement.appendChild(bubble);
+
+messagesContainer.appendChild(messageElement);
+
+/*
+Transforme les codes ChatOpen
+en images personnalisées.
+*/
+
+renderChatOpenEmojis(content);
+
+}
+
+function formatTime(date) {
+
+return date.toLocaleTimeString(
+"fr-FR",
+{
+hour: "2-digit",
+minute: "2-digit"
+}
+);
+
+}
+
+/* =========================================================
+ENVOYER UN MESSAGE
+========================================================= */
+
+messageForm?.addEventListener(
+"submit",
+async (event) => {
+
+event.preventDefault();
+
+if (!currentUser || !otherUser) {
+  return;
+}
+
+const text =
+  messageInput.value.trim();
+
+if (!text) return;
+
+messageInput.disabled = true;
+
+try {
+
+  const messagesRef =
+    collection(
+      db,
+      "conversations",
+      conversationId,
+      "messages"
+    );
 
 
-// ===============================
-// ENVOYER UN MESSAGE
-// ===============================
+  await addDoc(
+    messagesRef,
+    {
+      senderId:
+        currentUser.uid,
 
-messageForm.addEventListener("submit", (event) => {
+      receiverId:
+        otherUser.id,
 
-  event.preventDefault();
+      text: text,
 
-  if (!selectedUser) {
-    return;
-  }
+      createdAt:
+        serverTimestamp()
+    }
+  );
 
-  const text = messageInput.value.trim();
 
-  if (!text) {
-    return;
-  }
+  /*
+    Met à jour les informations générales
+    de la conversation.
+  */
 
-  addMessage(text);
+  await setDoc(
+    doc(
+      db,
+      "conversations",
+      conversationId
+    ),
+    {
+      participants: [
+        currentUser.uid,
+        otherUser.id
+      ],
+
+      lastMessage: text,
+
+      lastMessageSender:
+        currentUser.uid,
+
+      updatedAt:
+        serverTimestamp()
+    },
+    {
+      merge: true
+    }
+  );
+
 
   messageInput.value = "";
+
+
+} catch (error) {
+
+  console.error(
+    "Erreur envoi message :",
+    error
+  );
+
+  alert(
+    "Impossible d'envoyer le message."
+  );
+
+} finally {
+
+  messageInput.disabled = false;
+
   messageInput.focus();
+
+}
+
+}
+);
+
+/* =========================================================
+THÈMES
+========================================================= */
+
+async function loadConversationTheme() {
+
+try {
+
+currentTheme =
+  await getConversationTheme(
+    currentUser.uid,
+    otherUser.id
+  );
+
+applyConversationTheme(
+  messagesContainer,
+  currentTheme
+);
+
+} catch (error) {
+
+console.error(
+  "Erreur thème :",
+  error
+);
+
+}
+
+}
+
+themeButton?.addEventListener(
+"click",
+async () => {
+
+if (!themeModal || !themeList) {
+  return;
+}
+
+themeModal.classList.remove("hidden");
+
+renderThemeList(
+  themeList,
+  currentTheme,
+  async (themeName) => {
+
+    try {
+
+      await saveConversationTheme(
+        currentUser.uid,
+        otherUser.id,
+        themeName
+      );
+
+      currentTheme =
+        themeName;
+
+      applyConversationTheme(
+        messagesContainer,
+        currentTheme
+      );
+
+      renderThemeList(
+        themeList,
+        currentTheme,
+        arguments
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Erreur changement thème :",
+        error
+      );
+
+    }
+
+  }
+);
+
+}
+);
+
+closeThemeButton?.addEventListener(
+"click",
+() => {
+
+themeModal?.classList.add("hidden");
+
+}
+);
+
+themeModal?.addEventListener(
+"click",
+(event) => {
+
+if (event.target === themeModal) {
+
+  themeModal.classList.add("hidden");
+
+}
+
+}
+);
+
+/* =========================================================
+EMOJIS CHATOPEN
+========================================================= */
+
+let emojiPanel = null;
+
+emojiButton?.addEventListener(
+"click",
+() => {
+
+if (emojiPanel) {
+
+  emojiPanel.remove();
+
+  emojiPanel = null;
+
+  return;
+
+}
+
+createEmojiPanel();
+
+}
+);
+
+function createEmojiPanel() {
+
+emojiPanel =
+document.createElement("div");
+
+emojiPanel.className =
+"chatopen-emoji-panel";
+
+const categories =
+document.createElement("div");
+
+categories.className =
+"emoji-categories";
+
+const grid =
+document.createElement("div");
+
+grid.className =
+"emoji-grid";
+
+emojiPanel.appendChild(categories);
+
+emojiPanel.appendChild(grid);
+
+CHATOPEN_EMOJI_CATEGORIES
+.forEach((category, index) => {
+
+  const button =
+    document.createElement("button");
+
+  button.type = "button";
+
+  button.className =
+    "emoji-category-button";
+
+  button.textContent =
+    category.name;
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      renderEmojiCategory(
+        category.id,
+        grid
+      );
+
+    }
+  );
+
+  categories.appendChild(button);
+
+  if (index === 0) {
+
+    renderEmojiCategory(
+      category.id,
+      grid
+    );
+
+  }
+
 });
 
+messageForm.parentElement
+.appendChild(emojiPanel);
 
-// ===============================
-// AFFICHER UN MESSAGE
-// ===============================
-
-function addMessage(text) {
-
-  const message = document.createElement("div");
-
-  message.className = "message mine";
-
-  message.innerHTML = `
-    <div class="message-bubble">
-      ${escapeHTML(text)}
-    </div>
-  `;
-
-  messages.appendChild(message);
-
-  messages.scrollTop = messages.scrollHeight;
 }
 
+function renderEmojiCategory(
+categoryId,
+container
+) {
 
-// ===============================
-// SÉCURITÉ HTML
-// ===============================
+container.innerHTML = "";
 
-function escapeHTML(text) {
+const emojis =
+getEmojisByCategory(categoryId);
 
-  const div = document.createElement("div");
+emojis.forEach((emoji) => {
 
-  div.textContent = text;
+const button =
+  document.createElement("button");
 
-  return div.innerHTML;
+button.type = "button";
+
+button.className =
+  "emoji-item";
+
+const image =
+  createEmojiElement(emoji);
+
+button.appendChild(image);
+
+
+button.addEventListener(
+  "click",
+  () => {
+
+    insertEmoji(
+      messageInput,
+      emoji
+    );
+
+    messageInput.focus();
+
+  }
+);
+
+
+container.appendChild(button);
+
+});
+
 }
+
+/* =========================================================
+RETOUR
+========================================================= */
+
+backButton?.addEventListener(
+"click",
+() => {
+
+window.location.href =
+  "search.html";
+
+}
+);
+
+/* =========================================================
+UTILITAIRES D'AFFICHAGE
+========================================================= */
+
+function scrollToBottom() {
+
+requestAnimationFrame(() => {
+
+messagesContainer.scrollTop =
+  messagesContainer.scrollHeight;
+
+});
+
+}
+
+function showEmptyConversation() {
+
+messagesContainer.innerHTML = "<div class="empty-chat"> <div class="empty-chat-icon">💬</div> <h3>Nouvelle conversation</h3> <p>Envoyez votre premier message.</p> </div>";
+
+}
+
+/* =========================================================
+NETTOYAGE
+========================================================= */
+
+window.addEventListener(
+"beforeunload",
+() => {
+
+if (unsubscribeMessages) {
+
+  unsubscribeMessages();
+
+}
+
+}
+);
