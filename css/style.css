@@ -1,504 +1,200 @@
-/* =========================================
-CHATOPEN — STYLE.CSS
-Écran d'accueil + logo 3D
-========================================= */
-
+/* --- Variables globales --- */
 :root {
---bg: #050912;
---bg-soft: #0b1220;
-
---blue: #00cfff;
---blue-dark: #0878ff;
---violet: #8b4dff;
-
---white: #ffffff;
---muted: #8d9aae;
-
---border: rgba(255, 255, 255, 0.09);
+  --bg-dark: #070913;
+  --panel-bg: #0d1224;
+  --primary-blue: #00d2ff;
+  --primary-purple: #9b51e0;
+  --text-main: #ffffff;
+  --text-muted: #8c9bb3;
+  --border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* =========================================
-RESET
-========================================= */
-
+/* --- Style général --- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  
-  font-family:
-  Inter,
-  -apple-system,
-  BlinkMacSystemFont,
-  "Segoe UI",
-  Roboto,
-  Arial,
-  sans-serif;
-  }
-
-html,
-body {
-width: 100%;
-height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 body {
-background:
-radial-gradient(
-circle at 50% 10%,
-rgba(0, 207, 255, 0.12),
-transparent 35%
-),
-radial-gradient(
-circle at 80% 70%,
-rgba(139, 77, 255, 0.09),
-transparent 30%
-),
-var(--bg);
-
-color: var(--white);
-
-overflow: hidden;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
 }
 
-/* =========================================
-APPLICATION
-========================================= */
-
+/* --- Conteneur principal (Simulateur mobile) --- */
 .app-container {
-position: relative;
-
-width: 100%;
-max-width: 430px;
-height: 100dvh;
-
-margin: auto;
-
-display: flex;
-flex-direction: column;
-align-items: center;
-
-padding: 42px 24px 24px;
-
-overflow: hidden;
-
-background:
-linear-gradient(
-180deg,
-rgba(17, 27, 45, 0.96),
-rgba(5, 9, 18, 0.99)
-);
+  width: 100%;
+  max-width: 412px;
+  height: 100vh;
+  max-height: 892px;
+  background: radial-gradient(circle at top center, #111b33 0%, var(--bg-dark) 75%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px 24px 32px 24px;
+  position: relative;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border-color);
 }
 
-/* Lumière d'ambiance */
-
-.app-container::before {
-content: "";
-
-position: absolute;
-
-width: 280px;
-height: 280px;
-
-top: -130px;
-left: 50%;
-
-transform: translateX(-50%);
-
-background: rgba(0, 207, 255, 0.14);
-
-filter: blur(90px);
-
-pointer-events: none;
-}
-
-.app-container::after {
-content: "";
-
-position: absolute;
-
-width: 220px;
-height: 220px;
-
-right: -120px;
-bottom: 80px;
-
-background: rgba(139, 77, 255, 0.10);
-
-filter: blur(80px);
-
-pointer-events: none;
-}
-
-/* =========================================
-LOGO / BRAND
-========================================= */
-
+/* --- En-tête / Logo & Texte --- */
 .brand-section {
-position: relative;
-z-index: 2;
-
-width: 100%;
-
-display: flex;
-flex-direction: column;
-align-items: center;
-
-margin-top: 45px;
-
-text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  text-align: center;
 }
 
-/* Icône */
-
-.logo-img {
-width: 112px;
-height: 112px;
-
-object-fit: contain;
-
-margin-bottom: 20px;
-
-border-radius: 25px;
-
-filter:
-drop-shadow(
-0 12px 25px rgba(0, 0, 0, 0.55)
-)
-drop-shadow(
-0 0 22px rgba(0, 207, 255, 0.16)
-);
-
-transition:
-transform 0.25s ease,
-filter 0.25s ease;
+/* Style de l'icône logo en relief */
+.logo-icon-box {
+  width: 96px;
+  height: 96px;
+  background: linear-gradient(135deg, #131c38 0%, #080c1a 100%);
+  border-radius: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.logo-img:hover {
-transform: translateY(-3px) scale(1.02);
-
-filter:
-drop-shadow(
-0 16px 30px rgba(0, 0, 0, 0.6)
-)
-drop-shadow(
-0 0 28px rgba(0, 207, 255, 0.22)
-);
+/* Simulation visuelle de la bulle du logo */
+.logo-bubble {
+  font-size: 42px;
+  background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
 }
 
-/* =========================================
-NOM CHATOPEN
-========================================= */
-
+/* Nom de la marque avec dégradé sur Open */
 .brand-title {
-font-size: 32px;
-
-line-height: 1.1;
-
-font-weight: 750;
-
-letter-spacing: -0.8px;
-
-color: var(--white);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
 }
 
-/* Chat */
-
-.brand-title .chat {
-color: #ffffff;
+.brand-title span:nth-child(1) {
+  color: var(--text-main);
 }
 
-/* Open */
-
-.brand-title .open {
-background:
-linear-gradient(
-110deg,
-var(--blue),
-#268cff,
-var(--violet)
-);
-
--webkit-background-clip: text;
-background-clip: text;
-
--webkit-text-fill-color: transparent;
+.brand-title span:nth-child(2) {
+  background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* =========================================
-SLOGAN
-========================================= */
-
-.slogan {
-display: flex;
-align-items: center;
-justify-content: center;
-
-gap: 7px;
-
-margin-top: 13px;
-
-color: #dce4ee;
-
-font-size: 9px;
-
-font-weight: 600;
-
-letter-spacing: 1.2px;
-
-white-space: nowrap;
-}
-
-.slogan .dash-blue {
-width: 13px;
-height: 2px;
-
-border-radius: 10px;
-
-background: var(--blue);
-}
-
-.slogan .dash-violet {
-width: 13px;
-height: 2px;
-
-border-radius: 10px;
-
-background: var(--violet);
-}
-
-/* =========================================
-SOUS-TEXTE
-========================================= */
-
+/* Slogan du logo */
 .brand-tagline {
-margin-top: 10px;
-
-max-width: 280px;
-
-color: var(--muted);
-
-font-size: 12px;
-
-line-height: 1.5;
-
-text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
 }
 
-/* =========================================
-ACTIONS
-========================================= */
+.brand-tagline::before,
+.brand-tagline::after {
+  content: "";
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+}
 
+.brand-tagline::before {
+  background: var(--primary-blue);
+}
+
+.brand-tagline::after {
+  background: var(--primary-purple);
+}
+
+/* --- Section Actions / Boutons --- */
 .actions-section {
-position: relative;
-z-index: 3;
-
-width: 100%;
-
-margin-top: auto;
-margin-bottom: 28px;
-
-display: flex;
-flex-direction: column;
-
-gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
 }
-
-/* =========================================
-BOUTONS
-========================================= */
 
 .btn {
-width: 100%;
-min-height: 55px;
-
-border: none;
-outline: none;
-
-border-radius: 16px;
-
-padding: 15px 18px;
-
-font-size: 15px;
-
-font-weight: 650;
-
-color: white;
-
-cursor: pointer;
-
-transition:
-transform 0.2s ease,
-box-shadow 0.2s ease,
-opacity 0.2s ease;
-
--webkit-tap-highlight-color: transparent;
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  border: none;
+  outline: none;
 }
-
-.btn:active {
-transform: scale(0.97);
-}
-
-/* =========================================
-BOUTON PRINCIPAL
-========================================= */
 
 .btn-primary {
-background:
-linear-gradient(
-120deg,
-#00cfff 0%,
-#148dff 45%,
-#8b4dff 100%
-);
-
-box-shadow:
-0 10px 25px rgba(0, 150, 255, 0.20),
-0 5px 20px rgba(139, 77, 255, 0.14);
+  background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
+  color: var(--text-main);
+  box-shadow: 0 8px 20px rgba(155, 81, 224, 0.25);
 }
 
 .btn-primary:hover {
-transform: translateY(-2px);
-
-box-shadow:
-0 14px 32px rgba(0, 150, 255, 0.28),
-0 8px 24px rgba(139, 77, 255, 0.20);
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(155, 81, 224, 0.35);
 }
 
-/* =========================================
-BOUTON SECONDAIRE
-========================================= */
-
 .btn-outline {
-background:
-rgba(255, 255, 255, 0.035);
-
-border: 1px solid var(--border);
-
-color: #f5f7fa;
-
-backdrop-filter: blur(15px);
+  background: transparent;
+  color: var(--text-main);
+  border: 1.5px solid var(--border-color);
 }
 
 .btn-outline:hover {
-background:
-rgba(255, 255, 255, 0.065);
-
-border-color:
-rgba(255, 255, 255, 0.15);
-
-transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
 }
 
-/* =========================================
-FOOTER
-========================================= */
-
+/* --- Pied de page --- */
 .footer-section {
-position: relative;
-z-index: 2;
-
-display: flex;
-flex-direction: column;
-align-items: center;
-
-gap: 11px;
-
-color: #66758a;
-
-font-size: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 .ai-powered {
-font-size: 8px;
-
-letter-spacing: 1.5px;
-
-text-transform: uppercase;
-
-opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 10px;
+  color: var(--text-muted);
 }
 
 .footer-links {
-display: flex;
-
-align-items: center;
-
-gap: 18px;
+  display: flex;
+  gap: 16px;
 }
 
 .footer-links a {
-color: #66758a;
-
-text-decoration: none;
-
-transition: color 0.2s ease;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
 }
 
 .footer-links a:hover {
-color: var(--blue);
-}
-
-/* =========================================
-RESPONSIVE — PETITS ÉCRANS
-========================================= */
-
-@media (max-height: 700px) {
-
-.app-container {
-padding-top: 24px;
-}
-
-.brand-section {
-margin-top: 15px;
-}
-
-.logo-img {
-width: 82px;
-height: 82px;
-
-margin-bottom: 14px;
-
-}
-
-.brand-title {
-font-size: 27px;
-}
-
-.slogan {
-margin-top: 9px;
-font-size: 8px;
-}
-
-.actions-section {
-margin-bottom: 17px;
-}
-
-.btn {
-min-height: 50px;
-}
-}
-
-/* =========================================
-TABLETTES / GRAND ÉCRAN
-========================================= */
-
-@media (min-width: 700px) {
-
-body {
-padding: 20px;
-}
-
-.app-container {
-height: min(892px, 100vh);
-
-border-radius: 30px;
-
-border:
-  1px solid rgba(255, 255, 255, 0.06);
-
-box-shadow:
-  0 30px 80px rgba(0, 0, 0, 0.55);
-
-}
+  color: var(--primary-blue);
+  text-decoration: underline;
 }
