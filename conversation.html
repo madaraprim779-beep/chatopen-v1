@@ -1,0 +1,217 @@
+<!DOCTYPE html><html lang="fr"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>Conversation - ChatOpen</title>  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="conversation.css">
+</head><body>  <div class="conversation-app"><!-- =================================
+     HEADER
+     ================================= -->
+
+<header class="conversation-header">
+
+  <button
+    class="back-button"
+    id="backButton"
+    aria-label="Retour"
+  >
+    ‹
+  </button>
+
+
+  <div
+    class="person-avatar"
+    id="personAvatar"
+  >
+    U
+  </div>
+
+
+  <div class="person-info">
+
+    <h1 id="personName">
+      Utilisateur
+    </h1>
+
+    <span id="personStatus">
+      Hors ligne
+    </span>
+
+  </div>
+
+
+  <div class="conversation-actions">
+
+    <button
+      id="voiceCallButton"
+      class="conversation-action"
+      aria-label="Appel vocal"
+    >
+      ☎
+    </button>
+
+    <button
+      id="videoCallButton"
+      class="conversation-action"
+      aria-label="Appel vidéo"
+    >
+      ▣
+    </button>
+
+    <button
+      id="conversationMenu"
+      class="conversation-action"
+      aria-label="Menu"
+    >
+      ⋮
+    </button>
+
+  </div>
+
+</header>
+
+
+<!-- =================================
+     MESSAGES
+     ================================= -->
+
+<main
+  class="messages-container"
+  id="messagesContainer"
+>
+
+  <div
+    class="messages"
+    id="messages"
+  >
+
+    <!-- Les messages Firebase apparaîtront ici -->
+
+  </div>
+
+</main>
+
+
+<!-- =================================
+     RÉPONSE
+     ================================= -->
+
+<div
+  class="reply-preview"
+  id="replyPreview"
+>
+
+  <div>
+
+    <strong id="replyName">
+      Réponse
+    </strong>
+
+    <p id="replyText">
+      Message
+    </p>
+
+  </div>
+
+  <button id="cancelReply">
+    ×
+  </button>
+
+</div>
+
+
+<!-- =================================
+     ZONE D'ÉCRITURE
+     ================================= -->
+
+<footer class="message-composer">
+
+  <button
+    class="composer-button"
+    id="emojiButton"
+    aria-label="Emoji"
+  >
+    ☺
+  </button>
+
+
+  <div class="message-input-wrapper">
+
+    <input
+      type="text"
+      id="messageInput"
+      placeholder="Écrire un message..."
+      autocomplete="off"
+      maxlength="4000"
+    >
+
+
+    <button
+      id="attachmentButton"
+      aria-label="Pièce jointe"
+    >
+      📎
+    </button>
+
+  </div>
+
+
+  <button
+    class="composer-button"
+    id="voiceButton"
+    aria-label="Message vocal"
+  >
+    🎙
+  </button>
+
+
+  <button
+    class="send-button"
+    id="sendButton"
+    aria-label="Envoyer"
+  >
+    ➤
+  </button>
+
+</footer>
+
+
+<!-- =================================
+     MENU
+     ================================= -->
+
+<div
+  class="conversation-menu-overlay"
+  id="conversationMenuOverlay"
+>
+
+  <div class="conversation-menu">
+
+    <button id="closeConversationMenu">
+      ×
+    </button>
+
+    <h2>Conversation</h2>
+
+    <button id="searchMessages">
+      🔍 Rechercher dans la discussion
+    </button>
+
+    <button id="muteConversation">
+      🔕 Notifications
+    </button>
+
+    <button id="clearConversation">
+      🗑 Effacer la discussion
+    </button>
+
+    <button id="blockUser">
+      🚫 Bloquer
+    </button>
+
+  </div>
+
+</div>
+
+  </div>  <script
+    type="module"
+    src="js/conversation.js"
+  ></script></body></html>
