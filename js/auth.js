@@ -1,162 +1,194 @@
 import {
-createUserWithEmailAndPassword
+auth,
+db
+} from "./firebase.js";
+
+import {
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+updateProfile
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
 doc,
 setDoc,
-getDocs,
+getDoc,
 collection,
 query,
 where,
+getDocs,
 serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { auth, db } from "./firebase.js";
+/* =========================================
+GÉNÉRER UN ID CHATOPEN
+========================================= */
 
-const form = document.getElementById("registerForm");
-const message = document.getElementById("registerMessage");
+async function generateChatOpenId() {
 
-/* Génère un identifiant ChatOpen */
-function generateChatOpenNumber() {
-const number = Math.floor(100000 + Math.random() * 900000);
-return "CO-${number}";
-}
-
-/* Vérifie que l'identifiant n'existe pas déjà */
-async function generateUniqueNumber() {
-let chatOpenNumber;
+let chatOpenId;
 let exists = true;
 
 while (exists) {
-chatOpenNumber = generateChatOpenNumber();
 
-const q = query(
-  collection(db, "users"),
-  where("chatOpenNumber", "==", chatOpenNumber)
-);
+chatOpenId =
+  Math.floor(
+    10000000 +
+    Math.random() * 90000000
+  ).toString();
 
-const result = await getDocs(q);
+const usersRef =
+  collection(db, "users");
+
+const idQuery =
+  query(
+    usersRef,
+    where(
+      "chatOpenId",
+      "==",
+      chatOpenId
+    )
+  );
+
+const result =
+  await getDocs(idQuery);
+
 exists = !result.empty;
 
 }
 
-return chatOpenNumber;
+return chatOpenId;
 }
 
-function showMessage(text, type = "error") {
-message.textContent = text;
-message.className = "form-message ${type}";
-}
+/* =========================================
+CRÉER UN COMPTE
+========================================= */
 
-form.addEventListener("submit", async (event) => {
-event.preventDefault();
-
-const name = document.getElementById("name").value.trim();
-const password = document.getElementById("password").value;
-const confirmPassword =
-document.getElementById("confirmPassword").value;
-
-if (!name) {
-showMessage("Veuillez entrer votre nom.");
-return;
-}
-
-if (password.length < 6) {
-showMessage("Le mot de passe doit contenir au moins 6 caractères.");
-return;
-}
-
-if (password !== confirmPassword) {
-showMessage("Les mots de passe ne correspondent pas.");
-return;
-}
+export async function registerUser(
+name,
+email,
+password
+) {
 
 try {
 
-showMessage("Création de votre compte...", "loading");
-
-
-/*
-  Firebase Authentication nécessite un email.
-  On utilise un email interne basé sur l'identifiant Firebase.
-  L'utilisateur n'a pas besoin de saisir un email.
-*/
-
-const temporaryEmail =
-  `${Date.now()}-${Math.random().toString(36).slice(2)}@chatopen.local`;
-
-
-const userCredential =
+const credential =
   await createUserWithEmailAndPassword(
     auth,
-    temporaryEmail,
+    email,
+    password
+  );
+
+const user =
+  credential.user;
+
+
+/* Génération de l'ID unique */
+
+const chatOpenId =
+  await generateChatOpenId();
+
+
+/* Nom affiché Firebase */
+
+await updateProfile(
+  user,
+  {
+    displayName: name
+  }
+);
+
+
+/* Enregistrement Firestore */
+
+await setDoc(
+  doc(
+    db,
+    "users",
+    user.uid
+  ),
+  {
+
+    uid: user.uid,
+
+    name: name,
+
+    nameLower:
+      name.toLowerCase(),
+
+    email: email,
+
+    chatOpenId:
+      chatOpenId,
+
+    photoURL: "",
+
+    status: "En ligne",
+
+    createdAt:
+      serverTimestamp()
+
+  }
+);
+
+
+return {
+  success: true,
+  chatOpenId: chatOpenId
+};
+
+} catch (error) {
+
+console.error(
+  "Erreur création compte :",
+  error
+);
+
+return {
+  success: false,
+  error: error
+};
+
+}
+
+}
+
+/* =========================================
+CONNEXION
+========================================= */
+
+export async function loginUser(
+email,
+password
+) {
+
+try {
+
+const credential =
+  await signInWithEmailAndPassword(
+    auth,
+    email,
     password
   );
 
 
-const user = userCredential.user;
-
-
-const chatOpenNumber =
-  await generateUniqueNumber();
-
-
-await setDoc(doc(db, "users", user.uid), {
-
-  uid: user.uid,
-
-  name: name,
-
-  chatOpenNumber: chatOpenNumber,
-
-  photoURL: "",
-
-  bio: "",
-
-  createdAt: serverTimestamp(),
-
-  online: true,
-
-  lastSeen: serverTimestamp(),
-
-  theme: {
-    mode: "light",
-    background: "default"
-  }
-
-});
-
-
-showMessage(
-  `Compte créé ! Votre identifiant est ${chatOpenNumber}`,
-  "success"
-);
-
-
-setTimeout(() => {
-  window.location.href = "chat.html";
-}, 1500);
+return {
+  success: true,
+  user: credential.user
+};
 
 } catch (error) {
 
-console.error(error);
+console.error(
+  "Erreur connexion :",
+  error
+);
 
-let errorMessage =
-  "Impossible de créer le compte.";
-
-if (error.code === "auth/weak-password") {
-  errorMessage =
-    "Le mot de passe est trop faible.";
-}
-
-if (error.code === "auth/email-already-in-use") {
-  errorMessage =
-    "Une erreur est survenue. Veuillez réessayer.";
-}
-
-showMessage(errorMessage);
+return {
+  success: false,
+  error: error
+};
 
 }
 
-});
+}
