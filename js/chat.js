@@ -1,120 +1,72 @@
 import {
-collection,
-doc,
-addDoc,
-query,
-orderBy,
-onSnapshot,
-getDoc,
-setDoc,
-serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-import {
 auth,
 db
 } from "./firebase.js";
 
 import {
-getConversationTheme,
-saveConversationTheme,
-applyConversationTheme,
-renderThemeList
-} from "./themes.js";
+onAuthStateChanged,
+signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-CHATOPEN_EMOJIS,
-CHATOPEN_EMOJI_CATEGORIES,
-getEmojisByCategory,
-createEmojiElement,
-insertEmoji,
-renderChatOpenEmojis
-} from "./emoji.js";
+collection,
+query,
+where,
+orderBy,
+onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* =========================================================
-ÉLÉMENTS HTML
-========================================================= */
+/* =========================================
+ÉLÉMENTS
+========================================= */
 
-const messagesContainer =
-document.getElementById("messagesContainer");
+const myInitial = document.getElementById("myInitial");
+const myAvatar = document.getElementById("myAvatar");
+const myStatus = document.getElementById("myStatus");
 
-const messageForm =
-document.getElementById("messageForm");
+const menuButton = document.getElementById("menuButton");
+const menuOverlay = document.getElementById("menuOverlay");
+const closeMenu = document.getElementById("closeMenu");
 
-const messageInput =
-document.getElementById("messageInput");
+const searchButton = document.getElementById("searchButton");
+const chatSearch = document.getElementById("chatSearch");
+const searchInput = document.getElementById("searchInput");
+const closeSearch = document.getElementById("closeSearch");
 
-const chatUserName =
-document.getElementById("chatUserName");
-
-const chatUserNumber =
-document.getElementById("chatUserNumber");
-
-const chatUserAvatar =
-document.getElementById("chatUserAvatar");
+const conversationList =
+document.getElementById("conversationList");
 
 const emptyChat =
 document.getElementById("emptyChat");
 
-const backButton =
-document.getElementById("backButton");
+const logoutButton =
+document.getElementById("logoutButton");
 
-const themeButton =
-document.getElementById("themeButton");
+const newChatButton =
+document.getElementById("newChatButton");
 
-const themeModal =
-document.getElementById("themeModal");
+const contactsButton =
+document.getElementById("contactsButton");
 
-const closeThemeButton =
-document.getElementById("closeThemeButton");
+const profileButton =
+document.getElementById("profileButton");
 
-const themeList =
-document.getElementById("themeList");
+const settingsButton =
+document.getElementById("settingsButton");
 
-const emojiButton =
-document.getElementById("emojiButton");
-
-/* =========================================================
-VARIABLES
-========================================================= */
+/* =========================================
+UTILISATEUR CONNECTÉ
+========================================= */
 
 let currentUser = null;
-let otherUser = null;
-let conversationId = null;
 
-let unsubscribeMessages = null;
+let unsubscribeConversations = null;
 
-let currentTheme = "default";
+/* =========================================
+AUTHENTIFICATION
+========================================= */
 
-/* =========================================================
-UTILITAIRES
-========================================================= */
-
-function escapeHTML(value) {
-
-return String(value ?? "")
-.replaceAll("&", "&")
-.replaceAll("<", "<")
-.replaceAll(">", ">")
-.replaceAll('"', """)
-.replaceAll("'", "'");
-
-}
-
-function getOtherUserId() {
-
-const params =
-new URLSearchParams(window.location.search);
-
-return params.get("user");
-
-}
-
-/* =========================================================
-INITIALISATION
-========================================================= */
-
-auth.onAuthStateChanged(async (user) => {
+onAuthStateChanged(auth, (user) => {
 
 if (!user) {
 
@@ -126,647 +78,486 @@ return;
 
 currentUser = user;
 
-const otherUserId =
-getOtherUserId();
+loadUserInformation();
 
-if (!otherUserId) {
-
-showEmptyConversation();
-
-return;
-
-}
-
-await loadOtherUser(otherUserId);
-
-conversationId =
-[currentUser.uid, otherUser.uid]
-.sort()
-.join("_");
-
-await loadConversationTheme();
-
-listenToMessages();
+loadConversations();
 
 });
 
-/* =========================================================
-UTILISATEUR DESTINATAIRE
-========================================================= */
+/* =========================================
+INFORMATIONS UTILISATEUR
+========================================= */
 
-async function loadOtherUser(userId) {
+function loadUserInformation() {
 
-const userRef =
-doc(db, "users", userId);
+if (!currentUser) return;
 
-const snapshot =
-await getDoc(userRef);
+const name =
+currentUser.displayName ||
+currentUser.email?.split("@")[0] ||
+"Utilisateur";
 
-if (!snapshot.exists()) {
+const initial =
+name.charAt(0).toUpperCase();
 
-alert("Utilisateur introuvable.");
+myInitial.textContent = initial;
 
-window.location.href =
-  "search.html";
-
-return;
-
-}
-
-otherUser = {
-id: snapshot.id,
-...snapshot.data()
-};
-
-updateChatHeader();
+myStatus.textContent = "En ligne";
 
 }
 
-function updateChatHeader() {
+/* =========================================
+CHARGER LES CONVERSATIONS
+========================================= */
 
-chatUserName.textContent =
-otherUser.name || "Utilisateur";
+function loadConversations() {
 
-chatUserNumber.textContent =
-otherUser.chatOpenNumber || "";
+if (!currentUser) return;
 
-if (otherUser.photoURL) {
-
-chatUserAvatar.innerHTML = `
-  <img
-    src="${escapeHTML(otherUser.photoURL)}"
-    alt="Photo de profil"
-  >
-`;
-
-} else {
-
-chatUserAvatar.textContent =
-  (otherUser.name || "?")
-    .charAt(0)
-    .toUpperCase();
-
+if (unsubscribeConversations) {
+unsubscribeConversations();
 }
-
-}
-
-/* =========================================================
-MESSAGES EN TEMPS RÉEL
-========================================================= */
-
-function listenToMessages() {
-
-if (!conversationId) return;
-
-if (unsubscribeMessages) {
-
-unsubscribeMessages();
-
-}
-
-const messagesRef =
-collection(
-db,
-"conversations",
-conversationId,
-"messages"
-);
-
-const messagesQuery =
-query(
-messagesRef,
-orderBy("createdAt", "asc")
-);
 
 /*
-onSnapshot permet de recevoir automatiquement
-les nouveaux messages sans actualiser la page.
+Structure attendue dans Firestore :
+
+conversations
+  └── document
+      ├── participants: [uid1, uid2]
+      ├── lastMessage
+      ├── lastMessageAt
+      └── ...
+
 */
 
-unsubscribeMessages =
+const conversationsRef =
+collection(db, "conversations");
+
+const conversationsQuery = query(
+conversationsRef,
+where(
+"participants",
+"array-contains",
+currentUser.uid
+),
+orderBy("lastMessageAt", "desc")
+);
+
+unsubscribeConversations =
 onSnapshot(
-messagesQuery,
+conversationsQuery,
 (snapshot) => {
 
-    messagesContainer.innerHTML = "";
+    conversationList.innerHTML = "";
 
     if (snapshot.empty) {
 
-      showEmptyConversation();
+      conversationList.appendChild(
+        emptyChat
+      );
 
       return;
     }
 
-    snapshot.forEach((messageDoc) => {
+    snapshot.forEach((doc) => {
 
-      const message =
-        messageDoc.data();
+      const conversation =
+        doc.data();
 
-      renderMessage(
-        messageDoc.id,
-        message
+      createConversationElement(
+        doc.id,
+        conversation
       );
 
     });
 
-    scrollToBottom();
-
   },
+
   (error) => {
 
     console.error(
-      "Erreur temps réel :",
+      "Erreur conversations :",
       error
     );
 
-    messagesContainer.innerHTML = `
-      <div class="chat-error">
-        Impossible de charger les messages.
-      </div>
-    `;
-
-  }
-);
-
-}
-
-/* =========================================================
-AFFICHER UN MESSAGE
-========================================================= */
-
-function renderMessage(id, message) {
-
-const isMine =
-message.senderId === currentUser.uid;
-
-const messageElement =
-document.createElement("div");
-
-messageElement.className =
-"message-row ${isMine ? "mine" : "other"}";
-
-const bubble =
-document.createElement("div");
-
-bubble.className =
-"message-bubble ${isMine ? "mine" : "other"}";
-
-const content =
-document.createElement("div");
-
-content.className =
-"message-content";
-
-/*
-Pour l'instant les messages texte sont échappés.
-Les codes :co:xxx: sont ensuite remplacés
-par les emojis ChatOpen.
-*/
-
-content.textContent =
-message.text || "";
-
-bubble.appendChild(content);
-
-const time =
-document.createElement("div");
-
-time.className =
-"message-time";
-
-if (message.createdAt?.toDate) {
-
-time.textContent =
-  formatTime(
-    message.createdAt.toDate()
-  );
-
-}
-
-bubble.appendChild(time);
-
-messageElement.appendChild(bubble);
-
-messagesContainer.appendChild(messageElement);
-
-/*
-Transforme les codes ChatOpen
-en images personnalisées.
-*/
-
-renderChatOpenEmojis(content);
-
-}
-
-function formatTime(date) {
-
-return date.toLocaleTimeString(
-"fr-FR",
-{
-hour: "2-digit",
-minute: "2-digit"
-}
-);
-
-}
-
-/* =========================================================
-ENVOYER UN MESSAGE
-========================================================= */
-
-messageForm?.addEventListener(
-"submit",
-async (event) => {
-
-event.preventDefault();
-
-if (!currentUser || !otherUser) {
-  return;
-}
-
-const text =
-  messageInput.value.trim();
-
-if (!text) return;
-
-messageInput.disabled = true;
-
-try {
-
-  const messagesRef =
-    collection(
-      db,
-      "conversations",
-      conversationId,
-      "messages"
+    showEmptyMessage(
+      "Impossible de charger les discussions."
     );
 
-
-  await addDoc(
-    messagesRef,
-    {
-      senderId:
-        currentUser.uid,
-
-      receiverId:
-        otherUser.id,
-
-      text: text,
-
-      createdAt:
-        serverTimestamp()
-    }
-  );
-
-
-  /*
-    Met à jour les informations générales
-    de la conversation.
-  */
-
-  await setDoc(
-    doc(
-      db,
-      "conversations",
-      conversationId
-    ),
-    {
-      participants: [
-        currentUser.uid,
-        otherUser.id
-      ],
-
-      lastMessage: text,
-
-      lastMessageSender:
-        currentUser.uid,
-
-      updatedAt:
-        serverTimestamp()
-    },
-    {
-      merge: true
-    }
-  );
-
-
-  messageInput.value = "";
-
-
-} catch (error) {
-
-  console.error(
-    "Erreur envoi message :",
-    error
-  );
-
-  alert(
-    "Impossible d'envoyer le message."
-  );
-
-} finally {
-
-  messageInput.disabled = false;
-
-  messageInput.focus();
-
-}
-
-}
-);
-
-/* =========================================================
-THÈMES
-========================================================= */
-
-async function loadConversationTheme() {
-
-try {
-
-currentTheme =
-  await getConversationTheme(
-    currentUser.uid,
-    otherUser.id
-  );
-
-applyConversationTheme(
-  messagesContainer,
-  currentTheme
-);
-
-} catch (error) {
-
-console.error(
-  "Erreur thème :",
-  error
-);
-
-}
-
-}
-
-themeButton?.addEventListener(
-"click",
-async () => {
-
-if (!themeModal || !themeList) {
-  return;
-}
-
-themeModal.classList.remove("hidden");
-
-renderThemeList(
-  themeList,
-  currentTheme,
-  async (themeName) => {
-
-    try {
-
-      await saveConversationTheme(
-        currentUser.uid,
-        otherUser.id,
-        themeName
-      );
-
-      currentTheme =
-        themeName;
-
-      applyConversationTheme(
-        messagesContainer,
-        currentTheme
-      );
-
-      renderThemeList(
-        themeList,
-        currentTheme,
-        arguments
-      );
-
-    } catch (error) {
-
-      console.error(
-        "Erreur changement thème :",
-        error
-      );
-
-    }
-
   }
 );
 
 }
+
+/* =========================================
+CRÉER UNE CONVERSATION À L'ÉCRAN
+========================================= */
+
+function createConversationElement(
+conversationId,
+conversation
+) {
+
+const element =
+document.createElement("div");
+
+element.className =
+"conversation";
+
+const otherUser =
+getOtherParticipant(conversation);
+
+const name =
+conversation.otherUserName ||
+conversation.name ||
+"Utilisateur";
+
+const initial =
+name
+.charAt(0)
+.toUpperCase();
+
+const lastMessage =
+conversation.lastMessage ||
+"Nouvelle conversation";
+
+const time =
+formatTime(
+conversation.lastMessageAt
 );
 
-closeThemeButton?.addEventListener(
+element.innerHTML = `
+
+<div class="conversation-avatar">
+  ${initial}
+</div>
+
+<div class="conversation-info">
+
+  <div class="conversation-line">
+
+    <span class="conversation-name">
+      ${escapeHTML(name)}
+    </span>
+
+    <span class="conversation-time">
+      ${time}
+    </span>
+
+  </div>
+
+  <div class="conversation-message">
+    ${escapeHTML(lastMessage)}
+  </div>
+
+</div>
+
+`;
+
+element.addEventListener(
 "click",
 () => {
 
-themeModal?.classList.add("hidden");
+  window.location.href =
+    `conversation.html?id=${encodeURIComponent(conversationId)}`;
+
+}
+
+);
+
+conversationList.appendChild(
+element
+);
+
+}
+
+/* =========================================
+AUTRE PARTICIPANT
+========================================= */
+
+function getOtherParticipant(
+conversation
+) {
+
+if (
+!conversation.participants ||
+!currentUser
+) {
+return null;
+}
+
+return conversation.participants.find(
+uid => uid !== currentUser.uid
+);
+
+}
+
+/* =========================================
+RECHERCHE
+========================================= */
+
+searchButton?.addEventListener(
+"click",
+() => {
+
+chatSearch.classList.add("active");
+
+searchInput.focus();
 
 }
 );
 
-themeModal?.addEventListener(
+closeSearch?.addEventListener(
+"click",
+() => {
+
+chatSearch.classList.remove(
+  "active"
+);
+
+searchInput.value = "";
+
+filterConversations("");
+
+}
+);
+
+searchInput?.addEventListener(
+"input",
+(event) => {
+
+filterConversations(
+  event.target.value
+);
+
+}
+);
+
+function filterConversations(value) {
+
+const search =
+value
+.trim()
+.toLowerCase();
+
+const conversations =
+document.querySelectorAll(
+".conversation"
+);
+
+conversations.forEach(
+conversation => {
+
+  const name =
+    conversation
+      .querySelector(
+        ".conversation-name"
+      )
+      ?.textContent
+      .toLowerCase() || "";
+
+
+  const message =
+    conversation
+      .querySelector(
+        ".conversation-message"
+      )
+      ?.textContent
+      .toLowerCase() || "";
+
+
+  const visible =
+    name.includes(search) ||
+    message.includes(search);
+
+
+  conversation.style.display =
+    visible ? "flex" : "none";
+
+}
+
+);
+
+}
+
+/* =========================================
+MENU
+========================================= */
+
+menuButton?.addEventListener(
+"click",
+() => {
+
+menuOverlay.classList.add(
+  "active"
+);
+
+}
+);
+
+closeMenu?.addEventListener(
+"click",
+() => {
+
+menuOverlay.classList.remove(
+  "active"
+);
+
+}
+);
+
+menuOverlay?.addEventListener(
 "click",
 (event) => {
 
-if (event.target === themeModal) {
-
-  themeModal.classList.add("hidden");
-
-}
-
-}
-);
-
-/* =========================================================
-EMOJIS CHATOPEN
-========================================================= */
-
-let emojiPanel = null;
-
-emojiButton?.addEventListener(
-"click",
-() => {
-
-if (emojiPanel) {
-
-  emojiPanel.remove();
-
-  emojiPanel = null;
-
-  return;
-
-}
-
-createEmojiPanel();
-
-}
-);
-
-function createEmojiPanel() {
-
-emojiPanel =
-document.createElement("div");
-
-emojiPanel.className =
-"chatopen-emoji-panel";
-
-const categories =
-document.createElement("div");
-
-categories.className =
-"emoji-categories";
-
-const grid =
-document.createElement("div");
-
-grid.className =
-"emoji-grid";
-
-emojiPanel.appendChild(categories);
-
-emojiPanel.appendChild(grid);
-
-CHATOPEN_EMOJI_CATEGORIES
-.forEach((category, index) => {
-
-  const button =
-    document.createElement("button");
-
-  button.type = "button";
-
-  button.className =
-    "emoji-category-button";
-
-  button.textContent =
-    category.name;
-
-  button.addEventListener(
-    "click",
-    () => {
-
-      renderEmojiCategory(
-        category.id,
-        grid
-      );
-
-    }
-  );
-
-  categories.appendChild(button);
-
-  if (index === 0) {
-
-    renderEmojiCategory(
-      category.id,
-      grid
-    );
-
-  }
-
-});
-
-messageForm.parentElement
-.appendChild(emojiPanel);
-
-}
-
-function renderEmojiCategory(
-categoryId,
-container
+if (
+  event.target === menuOverlay
 ) {
 
-container.innerHTML = "";
-
-const emojis =
-getEmojisByCategory(categoryId);
-
-emojis.forEach((emoji) => {
-
-const button =
-  document.createElement("button");
-
-button.type = "button";
-
-button.className =
-  "emoji-item";
-
-const image =
-  createEmojiElement(emoji);
-
-button.appendChild(image);
-
-
-button.addEventListener(
-  "click",
-  () => {
-
-    insertEmoji(
-      messageInput,
-      emoji
-    );
-
-    messageInput.focus();
-
-  }
-);
-
-
-container.appendChild(button);
-
-});
+  menuOverlay.classList.remove(
+    "active"
+  );
 
 }
 
-/* =========================================================
-RETOUR
-========================================================= */
+}
+);
 
-backButton?.addEventListener(
+/* =========================================
+NOUVELLE DISCUSSION
+========================================= */
+
+newChatButton?.addEventListener(
 "click",
 () => {
 
 window.location.href =
-  "search.html";
+  "contacts.html";
 
 }
 );
 
-/* =========================================================
-UTILITAIRES D'AFFICHAGE
-========================================================= */
+/* =========================================
+NAVIGATION
+========================================= */
 
-function scrollToBottom() {
-
-requestAnimationFrame(() => {
-
-messagesContainer.scrollTop =
-  messagesContainer.scrollHeight;
-
-});
-
-}
-
-function showEmptyConversation() {
-
-messagesContainer.innerHTML = "<div class="empty-chat"> <div class="empty-chat-icon">💬</div> <h3>Nouvelle conversation</h3> <p>Envoyez votre premier message.</p> </div>";
-
-}
-
-/* =========================================================
-NETTOYAGE
-========================================================= */
-
-window.addEventListener(
-"beforeunload",
+contactsButton?.addEventListener(
+"click",
 () => {
 
-if (unsubscribeMessages) {
+window.location.href =
+  "contacts.html";
 
-  unsubscribeMessages();
+}
+);
+
+profileButton?.addEventListener(
+"click",
+() => {
+
+window.location.href =
+  "profile.html";
+
+}
+);
+
+settingsButton?.addEventListener(
+"click",
+() => {
+
+window.location.href =
+  "settings.html";
+
+}
+);
+
+/* =========================================
+DÉCONNEXION
+========================================= */
+
+logoutButton?.addEventListener(
+"click",
+async () => {
+
+try {
+
+  await signOut(auth);
+
+  window.location.href =
+    "index.html";
+
+} catch (error) {
+
+  console.error(
+    "Erreur déconnexion :",
+    error
+  );
+
+  alert(
+    "Impossible de se déconnecter."
+  );
 
 }
 
 }
 );
+
+/* =========================================
+UTILITAIRES
+========================================= */
+
+function formatTime(timestamp) {
+
+if (!timestamp) return "";
+
+try {
+
+const date =
+  timestamp.toDate
+    ? timestamp.toDate()
+    : new Date(timestamp);
+
+return date.toLocaleTimeString(
+  "fr-FR",
+  {
+    hour: "2-digit",
+    minute: "2-digit"
+  }
+);
+
+} catch {
+
+return "";
+
+}
+
+}
+
+function escapeHTML(value) {
+
+return String(value)
+.replaceAll("&", "&")
+.replaceAll("<", "<")
+.replaceAll(">", ">")
+.replaceAll('"', """)
+.replaceAll("'", "'");
+
+}
+
+function showEmptyMessage(message) {
+
+conversationList.innerHTML = `
+
+<div class="empty-chat">
+
+  <div class="empty-chat-icon">
+    ⚠️
+  </div>
+
+  <h3>${escapeHTML(message)}</h3>
+
+</div>
+
+`;
+
+}
