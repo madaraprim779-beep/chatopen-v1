@@ -1,392 +1,146 @@
 <!DOCTYPE html><html lang="fr"><head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">  <title>ChatOpen</title>  <link rel="stylesheet" href="style.css">
-</head><body><div class="chat-app">  <!-- ================= HEADER ================= -->  <header class="chat-topbar"><button
-  id="backButton"
-  class="icon-btn"
-  type="button"
-  aria-label="Retour">
-  ‹
-</button>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>ChatOpen</title>  <link rel="stylesheet" href="style.css">
+</head><body>  <div class="chatopen-app"><!-- HEADER -->
+<header class="topbar">
 
-<div class="conversation-user">
+  <div class="profile-area">
 
-  <div
-    id="chatUserAvatar"
-    class="conversation-avatar">
-    ?
-  </div>
+    <div class="avatar">
+      <span id="userInitial">C</span>
+    </div>
 
-  <div class="conversation-details">
-
-    <strong id="chatUserName">
-      Conversation
-    </strong>
-
-    <span id="chatUserNumber">
-    </span>
+    <div class="user-info">
+      <h2>ChatOpen</h2>
+      <span id="onlineStatus">En ligne</span>
+    </div>
 
   </div>
 
-</div>
+  <div class="top-actions">
 
-<div class="topbar-actions">
+    <button class="icon-btn" id="searchBtn" aria-label="Rechercher">
+      🔍
+    </button>
 
-  <button
-    id="audioCallButton"
-    class="icon-btn"
-    type="button"
-    aria-label="Appel vocal">
-    <span>☎</span>
-  </button>
+    <button class="icon-btn" id="menuBtn" aria-label="Menu">
+      ⋮
+    </button>
 
-  <button
-    id="videoCallButton"
-    class="icon-btn"
-    type="button"
-    aria-label="Appel vidéo">
-    <span>▣</span>
-  </button>
-
-  <button
-    id="themeButton"
-    class="icon-btn"
-    type="button"
-    aria-label="Thème">
-    <span>◐</span>
-  </button>
-
-</div>
-
-  </header>  <!-- ================= CHAT ================= -->  <main
-    id="messagesContainer"
-    class="messages"><div
-  id="emptyChat"
-  class="empty-conversation">
-
-  <div class="empty-icon">
-    💬
   </div>
 
-  <strong>
-    Aucun message
-  </strong>
+</header>
 
-  <span>
-    Commencez la conversation.
-  </span>
+
+<!-- RECHERCHE -->
+<div class="search-box" id="searchBox">
+
+  <input
+    type="search"
+    id="searchInput"
+    placeholder="Rechercher une personne..."
+    autocomplete="off"
+  >
 
 </div>
 
-  </main>  <!-- ================= EMOJI PANEL ================= -->  <section
-    id="emojiPanel"
-    class="emoji-panel"
-    hidden><div
-  id="emojiCategories"
-  class="emoji-tabs">
-</div>
 
-<div
-  id="emojiGrid"
-  class="emoji-grid">
-</div>
+<!-- LISTE DES DISCUSSIONS -->
+<main class="conversation-list" id="conversationList">
 
-  </section>  <!-- ================= COMPOSER ================= -->  <form
-    id="messageForm"
-    class="composer"><button
-  id="emojiButton"
-  class="composer-icon"
-  type="button"
-  aria-label="Emojis">
-  ☺
-</button>
+  <div class="empty-state" id="emptyState">
 
-<input
-  id="messageInput"
-  type="text"
-  placeholder="Message"
-  autocomplete="off"
-  maxlength="5000">
+    <div class="empty-icon">
+      💬
+    </div>
 
+    <h3>Aucune discussion</h3>
+
+    <p>
+      Commence une nouvelle conversation
+      avec quelqu'un sur ChatOpen.
+    </p>
+
+    <button class="new-chat-btn" id="newChatBtn">
+      Nouvelle discussion
+    </button>
+
+  </div>
+
+</main>
+
+
+<!-- BOUTON NOUVELLE DISCUSSION -->
 <button
-  id="sendButton"
-  class="send-btn"
-  type="submit"
-  aria-label="Envoyer">
-  ↑
+  class="floating-btn"
+  id="floatingNewChat"
+  aria-label="Nouvelle discussion"
+>
+  +
 </button>
 
-  </form></div><!-- ================= THEME ================= --><div
-  id="themeModal"
-  class="modal-overlay hidden">  <section class="theme-sheet"><div class="sheet-header">
 
-  <div>
-    <strong>Thème</strong>
-    <span>Personnalisez cette conversation</span>
-  </div>
+<!-- NAVIGATION -->
+<nav class="bottom-nav">
 
-  <button
-    id="closeThemeButton"
-    class="sheet-close"
-    type="button">
+  <button class="nav-item active">
+
+    <span class="nav-icon">💬</span>
+    <span>Discussions</span>
+
+  </button>
+
+  <button class="nav-item" id="contactsBtn">
+
+    <span class="nav-icon">👥</span>
+    <span>Contacts</span>
+
+  </button>
+
+  <button class="nav-item" id="profileBtn">
+
+    <span class="nav-icon">👤</span>
+    <span>Profil</span>
+
+  </button>
+
+  <button class="nav-item" id="settingsBtn">
+
+    <span class="nav-icon">⚙️</span>
+    <span>Réglages</span>
+
+  </button>
+
+</nav>
+
+  </div>  <!-- MENU -->  <div class="menu-overlay" id="menuOverlay"><div class="side-menu">
+
+  <button id="closeMenu" class="close-menu">
     ×
   </button>
 
+  <h2>ChatOpen</h2>
+
+  <button>
+    👤 Mon profil
+  </button>
+
+  <button>
+    🎨 Thème des discussions
+  </button>
+
+  <button>
+    🔔 Notifications
+  </button>
+
+  <button>
+    🔒 Confidentialité
+  </button>
+
+  <button>
+    ⚙️ Réglages
+  </button>
+
 </div>
 
-<div
-  id="themeList"
-  class="theme-list">
-</div>
-
-  </section></div><!-- ================= APPEL ================= --><div
-  id="callModal"
-  class="call-modal hidden"><video
-id="remoteVideo"
-class="remote-video"
-autoplay
-playsinline>
-</video>
-
-<video
-id="localVideo"
-class="local-video"
-autoplay
-muted
-playsinline>
-</video>
-
-  <div class="call-info"><strong id="callTitle">
-  Appel
-</strong>
-
-<span id="callStatus">
-  Connexion...
-</span>
-
-  </div>  <div class="call-actions"><button
-  id="acceptCallButton"
-  class="call-btn accept"
-  type="button">
-  ✓
-</button>
-
-<button
-  id="rejectCallButton"
-  class="call-btn decline"
-  type="button">
-  ×
-</button>
-
-<button
-  id="muteButton"
-  class="call-btn"
-  type="button">
-  🎙
-</button>
-
-<button
-  id="cameraButton"
-  class="call-btn"
-  type="button">
-  ▣
-</button>
-
-<button
-  id="endCallButton"
-  class="call-btn decline"
-  type="button">
-  ☎
-</button>
-
-  </div></div><!-- ================= SCRIPTS ================= --><script type="module">
-
-  import {
-    CHATOPEN_EMOJI_CATEGORIES,
-    getEmojisByCategory,
-    createEmojiElement,
-    insertEmoji
-  } from "./js/emoji.js";
-
-  import {
-    startCall,
-    listenForIncomingCalls
-  } from "./js/calls.js";
-
-
-  /* ---------- EMOJIS ---------- */
-
-  const emojiButton =
-    document.getElementById("emojiButton");
-
-  const emojiPanel =
-    document.getElementById("emojiPanel");
-
-  const emojiCategories =
-    document.getElementById("emojiCategories");
-
-  const emojiGrid =
-    document.getElementById("emojiGrid");
-
-  const messageInput =
-    document.getElementById("messageInput");
-
-
-  function showEmojiCategory(category) {
-
-    emojiGrid.innerHTML = "";
-
-    getEmojisByCategory(category)
-      .forEach((emoji) => {
-
-        const button =
-          document.createElement("button");
-
-        button.type = "button";
-
-        button.className =
-          "emoji-item";
-
-        button.appendChild(
-          createEmojiElement(emoji)
-        );
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            insertEmoji(
-              messageInput,
-              emoji
-            );
-
-            messageInput.focus();
-
-          }
-        );
-
-        emojiGrid.appendChild(button);
-
-      });
-
-  }
-
-
-  CHATOPEN_EMOJI_CATEGORIES
-    .forEach((category, index) => {
-
-      const button =
-        document.createElement("button");
-
-      button.type = "button";
-
-      button.className =
-        "emoji-tab";
-
-      button.textContent =
-        category.name;
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          showEmojiCategory(
-            category.id
-          );
-
-        }
-      );
-
-      emojiCategories.appendChild(button);
-
-      if (index === 0) {
-
-        showEmojiCategory(
-          category.id
-        );
-
-      }
-
-    });
-
-
-  emojiButton.addEventListener(
-    "click",
-    () => {
-
-      emojiPanel.hidden =
-        !emojiPanel.hidden;
-
-    }
-  );
-
-
-  /* ---------- APPELS ---------- */
-
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
-
-  const receiverId =
-    params.get("user");
-
-
-  document
-    .getElementById("audioCallButton")
-    ?.addEventListener(
-      "click",
-      async () => {
-
-        if (!receiverId) return;
-
-        try {
-
-          await startCall(
-            receiverId,
-            "audio"
-          );
-
-        } catch (error) {
-
-          console.error(error);
-
-        }
-
-      }
-    );
-
-
-  document
-    .getElementById("videoCallButton")
-    ?.addEventListener(
-      "click",
-      async () => {
-
-        if (!receiverId) return;
-
-        try {
-
-          await startCall(
-            receiverId,
-            "video"
-          );
-
-        } catch (error) {
-
-          console.error(error);
-
-        }
-
-      }
-    );
-
-
-  listenForIncomingCalls();
-
-</script><script
-  type="module"
-  src="js/chat.js">
-</script></body>
-</html>
+  </div>  <script type="module" src="js/chat.js"></script></body></html>
