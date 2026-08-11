@@ -18,9 +18,7 @@ setDoc,
 serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* =========================================
-ÉLÉMENTS
-========================================= */
+let currentUser = null;
 
 const searchInput =
 document.getElementById("userSearch");
@@ -31,10 +29,8 @@ document.getElementById("results");
 const backButton =
 document.getElementById("backButton");
 
-let currentUser = null;
-
 /* =========================================
-AUTHENTIFICATION
+UTILISATEUR CONNECTÉ
 ========================================= */
 
 onAuthStateChanged(auth, (user) => {
@@ -42,7 +38,6 @@ onAuthStateChanged(auth, (user) => {
 if (!user) {
 
 window.location.href = "index.html";
-
 return;
 
 }
@@ -59,7 +54,8 @@ backButton?.addEventListener(
 "click",
 () => {
 
-window.location.href = "chat.html";
+window.location.href =
+  "chat.html";
 
 }
 );
@@ -68,225 +64,210 @@ window.location.href = "chat.html";
 RECHERCHE
 ========================================= */
 
-let searchTimeout = null;
+let searchTimer;
 
 searchInput?.addEventListener(
 "input",
 () => {
 
-clearTimeout(searchTimeout);
+clearTimeout(searchTimer);
 
 const value =
   searchInput.value.trim();
 
+
 if (!value) {
 
   showStartMessage();
-
   return;
+
 }
 
-searchTimeout = setTimeout(
-  () => searchUsers(value),
-  350
+
+/*
+  Petit délai pour éviter
+  une recherche à chaque touche.
+*/
+
+searchTimer = setTimeout(
+  () => searchUser(value),
+  400
 );
 
 }
 );
 
 /* =========================================
-RECHERCHER LES UTILISATEURS
+RECHERCHER PAR ID
 ========================================= */
 
-async function searchUsers(value) {
+async function searchUser(value) {
 
 if (!currentUser) return;
 
-results.innerHTML = "<div class="no-results"> Recherche en cours... </div>";
-
-const searchValue =
-value.toLowerCase();
-
-const usersRef =
-collection(db, "users");
-
-try {
-
 /*
-  On cherche d'abord par identifiant.
-
-  Exemple :
-  @madara4827
-
-  Dans Firestore :
-  usernameLower: "madara4827"
+L'ID ChatOpen doit être
+exactement 8 chiffres.
 */
 
-const usernameValue =
-  searchValue
-    .replace("@", "")
-    .trim();
+const chatOpenId =
+value.replace(/\D/g, "");
 
-
-const usernameQuery =
-  query(
-    usersRef,
-    where(
-      "usernameLower",
-      "==",
-      usernameValue
-    ),
-    limit(10)
-  );
-
-
-const usernameSnapshot =
-  await getDocs(usernameQuery);
-
-
-const foundUsers = [];
-
-
-usernameSnapshot.forEach(
-  (userDoc) => {
-
-    if (
-      userDoc.id !==
-      currentUser.uid
-    ) {
-
-      foundUsers.push({
-        id: userDoc.id,
-        ...userDoc.data()
-      });
-
-    }
-
-  }
-);
-
-
-/*
-  Si aucun résultat par identifiant,
-  on essaie le nom.
-*/
-
-if (foundUsers.length === 0) {
-
-  const nameQuery =
-    query(
-      usersRef,
-      where(
-        "nameLower",
-        "==",
-        searchValue
-      ),
-      limit(10)
-    );
-
-
-  const nameSnapshot =
-    await getDocs(nameQuery);
-
-
-  nameSnapshot.forEach(
-    (userDoc) => {
-
-      if (
-        userDoc.id !==
-        currentUser.uid
-      ) {
-
-        foundUsers.push({
-          id: userDoc.id,
-          ...userDoc.data()
-        });
-
-      }
-
-    }
-  );
-
-}
-
-
-displayResults(foundUsers);
-
-} catch (error) {
-
-console.error(
-  "Erreur de recherche :",
-  error
-);
-
+if (chatOpenId.length !== 8) {
 
 results.innerHTML = `
-  <div class="no-results">
-    <strong>Erreur</strong>
-    Impossible de rechercher les utilisateurs.
-  </div>
-`;
 
-}
-
-}
-
-/* =========================================
-AFFICHER LES RÉSULTATS
-========================================= */
-
-function displayResults(users) {
-
-results.innerHTML = "";
-
-if (users.length === 0) {
-
-results.innerHTML = `
   <div class="no-results">
 
-    <strong>Aucun utilisateur trouvé</strong>
+    <strong>ID incorrect</strong>
 
-    Vérifie le nom ou l'identifiant
-    ChatOpen.
+    Entre un identifiant ChatOpen
+    de 8 chiffres.
 
   </div>
+
 `;
 
 return;
 
 }
 
-users.forEach((user) => {
+results.innerHTML = `
+
+<div class="no-results">
+  Recherche...
+</div>
+
+`;
+
+try {
+
+const usersRef =
+  collection(
+    db,
+    "users"
+  );
+
+
+const userQuery =
+  query(
+    usersRef,
+    where(
+      "chatOpenId",
+      "==",
+      chatOpenId
+    ),
+    limit(1)
+  );
+
+
+const snapshot =
+  await getDocs(
+    userQuery
+  );
+
+
+if (snapshot.empty) {
+
+  showNoUser();
+  return;
+
+}
+
+
+const userDoc =
+  snapshot.docs[0];
+
+
+/*
+  Empêche de rechercher
+  son propre compte.
+*/
+
+if (
+  userDoc.id ===
+  currentUser.uid
+) {
+
+  results.innerHTML = `
+
+    <div class="no-results">
+
+      <strong>C'est ton compte</strong>
+
+      Tu ne peux pas démarrer
+      une conversation avec toi-même.
+
+    </div>
+
+  `;
+
+  return;
+
+}
+
+
+displayUser(
+  userDoc.id,
+  userDoc.data()
+);
+
+} catch (error) {
+
+console.error(
+  "Erreur recherche :",
+  error
+);
+
+
+results.innerHTML = `
+
+  <div class="no-results">
+
+    <strong>Erreur</strong>
+
+    Impossible de rechercher
+    cet utilisateur.
+
+  </div>
+
+`;
+
+}
+
+}
+
+/* =========================================
+AFFICHER L'UTILISATEUR
+========================================= */
+
+function displayUser(
+uid,
+user
+) {
 
 const name =
-  user.name ||
-  "Utilisateur";
-
-
-const username =
-  user.username ||
-  "";
-
+user.name ||
+"Utilisateur";
 
 const initial =
-  name
-    .charAt(0)
-    .toUpperCase();
+name
+.charAt(0)
+.toUpperCase();
+
+results.innerHTML = `
+
+<div class="search-result-title">
+  Utilisateur trouvé
+</div>
 
 
-const element =
-  document.createElement("div");
-
-
-element.className =
-  "user-result";
-
-
-element.innerHTML = `
+<div class="user-result">
 
   <div class="result-avatar">
     ${escapeHTML(initial)}
   </div>
+
 
   <div class="result-info">
 
@@ -295,112 +276,61 @@ element.innerHTML = `
     </div>
 
     <div class="result-username">
-      @${escapeHTML(
-        username.replace("@", "")
+      ID ${escapeHTML(
+        user.chatOpenId
       )}
     </div>
 
   </div>
 
+
   <button
     class="add-user"
-    data-user-id="${escapeHTML(user.id)}"
-    data-user-name="${escapeHTML(name)}"
+    id="startChatButton"
   >
-    Ajouter
+    Message
   </button>
+
+</div>
 
 `;
 
+document
+.getElementById(
+"startChatButton"
+)
+.addEventListener(
+"click",
+() => {
 
-const addButton =
-  element.querySelector(
-    ".add-user"
-  );
-
-
-addButton.addEventListener(
-  "click",
-  () => {
-
-    addContact(
-      user.id,
-      name,
-      username
+    startConversation(
+      uid,
+      user
     );
 
   }
 );
 
-
-results.appendChild(element);
-
-});
-
 }
 
 /* =========================================
-AJOUTER UN CONTACT
+CRÉER / OUVRIR UNE CONVERSATION
 ========================================= */
 
-async function addContact(
-userId,
-name,
-username
+async function startConversation(
+otherUid,
+otherUser
 ) {
 
 if (!currentUser) return;
 
-if (userId === currentUser.uid) {
-
-return;
-
-}
-
-try {
-
-/*
-  Création d'un contact dans :
-
-  users/{monUID}/contacts/{UIDDeLaPersonne}
-*/
-
-const contactRef =
-  doc(
-    db,
-    "users",
-    currentUser.uid,
-    "contacts",
-    userId
-  );
-
-
-await setDoc(
-  contactRef,
-  {
-    uid: userId,
-    name: name,
-    username: username,
-    addedAt: serverTimestamp()
-  },
-  {
-    merge: true
-  }
+const conversationId =
+createConversationId(
+currentUser.uid,
+otherUid
 );
 
-
-/*
-  On crée aussi la conversation.
-  Le document sera utilisé par
-  conversation.js plus tard.
-*/
-
-const conversationId =
-  createConversationId(
-    currentUser.uid,
-    userId
-  );
-
+try {
 
 const conversationRef =
   doc(
@@ -413,10 +343,25 @@ const conversationRef =
 await setDoc(
   conversationRef,
   {
+
     participants: [
       currentUser.uid,
-      userId
+      otherUid
     ],
+
+    /*
+      Ces informations permettent
+      à l'écran des discussions
+      d'afficher directement
+      la personne.
+    */
+
+    otherUserName:
+      otherUser.name ||
+      "Utilisateur",
+
+    otherUserId:
+      otherUid,
 
     lastMessage: "",
 
@@ -425,6 +370,7 @@ await setDoc(
 
     createdAt:
       serverTimestamp()
+
   },
   {
     merge: true
@@ -433,7 +379,7 @@ await setDoc(
 
 
 /*
-  Aller directement à la discussion.
+  Ouvrir la discussion.
 */
 
 window.location.href =
@@ -444,13 +390,13 @@ window.location.href =
 } catch (error) {
 
 console.error(
-  "Erreur ajout contact :",
+  "Erreur création conversation :",
   error
 );
 
 
 alert(
-  "Impossible d'ajouter cette personne."
+  "Impossible d'ouvrir la conversation."
 );
 
 }
@@ -466,14 +412,17 @@ uid1,
 uid2
 ) {
 
-return [uid1, uid2]
+return [
+uid1,
+uid2
+]
 .sort()
 .join("_");
 
 }
 
 /* =========================================
-MESSAGE INITIAL
+ÉCRAN DE DÉPART
 ========================================= */
 
 function showStartMessage() {
@@ -484,8 +433,7 @@ results.innerHTML = `
 
   <strong>Retrouver quelqu'un</strong>
 
-  Recherche son nom ou son identifiant
-  ChatOpen pour commencer une discussion.
+  Entre son ID ChatOpen à 8 chiffres.
 
 </div>
 
@@ -494,7 +442,28 @@ results.innerHTML = `
 }
 
 /* =========================================
-SÉCURITÉ HTML
+AUCUN UTILISATEUR
+========================================= */
+
+function showNoUser() {
+
+results.innerHTML = `
+
+<div class="no-results">
+
+  <strong>Aucun compte trouvé</strong>
+
+  Vérifie les 8 chiffres
+  de l'ID ChatOpen.
+
+</div>
+
+`;
+
+}
+
+/* =========================================
+PROTECTION HTML
 ========================================= */
 
 function escapeHTML(value) {
