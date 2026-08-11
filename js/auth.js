@@ -10,18 +10,17 @@ updateProfile
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-doc,
-setDoc,
-getDoc,
 collection,
 query,
 where,
 getDocs,
+doc,
+setDoc,
 serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* =========================================
-GÉNÉRER UN ID CHATOPEN
+GÉNÉRER UN ID CHATOPEN UNIQUE
 ========================================= */
 
 async function generateChatOpenId() {
@@ -37,8 +36,13 @@ chatOpenId =
     Math.random() * 90000000
   ).toString();
 
+
 const usersRef =
-  collection(db, "users");
+  collection(
+    db,
+    "users"
+  );
+
 
 const idQuery =
   query(
@@ -50,14 +54,20 @@ const idQuery =
     )
   );
 
-const result =
-  await getDocs(idQuery);
 
-exists = !result.empty;
+const result =
+  await getDocs(
+    idQuery
+  );
+
+
+exists =
+  !result.empty;
 
 }
 
 return chatOpenId;
+
 }
 
 /* =========================================
@@ -72,6 +82,49 @@ password
 
 try {
 
+/* Vérifications */
+
+name =
+  String(name || "").trim();
+
+email =
+  String(email || "").trim();
+
+password =
+  String(password || "");
+
+
+if (!name) {
+
+  throw new Error(
+    "Le nom est obligatoire."
+  );
+
+}
+
+
+if (!email) {
+
+  throw new Error(
+    "L'adresse e-mail est obligatoire."
+  );
+
+}
+
+
+if (password.length < 6) {
+
+  throw new Error(
+    "Le mot de passe doit contenir au moins 6 caractères."
+  );
+
+}
+
+
+/* ==============================
+   CRÉATION FIREBASE AUTH
+   ============================== */
+
 const credential =
   await createUserWithEmailAndPassword(
     auth,
@@ -79,17 +132,22 @@ const credential =
     password
   );
 
+
 const user =
   credential.user;
 
 
-/* Génération de l'ID unique */
+/* ==============================
+   GÉNÉRATION ID CHATOPEN
+   ============================== */
 
 const chatOpenId =
   await generateChatOpenId();
 
 
-/* Nom affiché Firebase */
+/* ==============================
+   NOM FIREBASE
+   ============================== */
 
 await updateProfile(
   user,
@@ -99,7 +157,9 @@ await updateProfile(
 );
 
 
-/* Enregistrement Firestore */
+/* ==============================
+   DOCUMENT UTILISATEUR
+   ============================== */
 
 await setDoc(
   doc(
@@ -109,21 +169,26 @@ await setDoc(
   ),
   {
 
-    uid: user.uid,
+    uid:
+      user.uid,
 
-    name: name,
+    name:
+      name,
 
     nameLower:
       name.toLowerCase(),
 
-    email: email,
+    email:
+      email,
 
     chatOpenId:
       chatOpenId,
 
-    photoURL: "",
+    photoURL:
+      "",
 
-    status: "En ligne",
+    status:
+      "En ligne",
 
     createdAt:
       serverTimestamp()
@@ -132,21 +197,68 @@ await setDoc(
 );
 
 
+console.log(
+  "Compte créé avec succès."
+);
+
+console.log(
+  "ID ChatOpen :",
+  chatOpenId
+);
+
+
 return {
+
   success: true,
-  chatOpenId: chatOpenId
+
+  user:
+    user,
+
+  chatOpenId:
+    chatOpenId
+
 };
 
 } catch (error) {
 
+/* ==============================
+   AFFICHER L'ERREUR EXACTE
+   ============================== */
+
 console.error(
-  "Erreur création compte :",
+  "ERREUR CRÉATION COMPTE",
   error
 );
 
+
+let message =
+  error?.message ||
+  "Erreur inconnue";
+
+
+if (error?.code) {
+
+  message =
+    error.code +
+    "\n\n" +
+    message;
+
+}
+
+
+alert(
+  "Erreur Firebase :\n\n" +
+  message
+);
+
+
 return {
+
   success: false,
-  error: error
+
+  error:
+    error
+
 };
 
 }
@@ -164,6 +276,14 @@ password
 
 try {
 
+email =
+  String(email || "").trim();
+
+
+password =
+  String(password || "");
+
+
 const credential =
   await signInWithEmailAndPassword(
     auth,
@@ -173,20 +293,50 @@ const credential =
 
 
 return {
+
   success: true,
-  user: credential.user
+
+  user:
+    credential.user
+
 };
 
 } catch (error) {
 
 console.error(
-  "Erreur connexion :",
+  "ERREUR CONNEXION",
   error
 );
 
+
+let message =
+  error?.message ||
+  "Erreur inconnue";
+
+
+if (error?.code) {
+
+  message =
+    error.code +
+    "\n\n" +
+    message;
+
+}
+
+
+alert(
+  "Erreur Firebase :\n\n" +
+  message
+);
+
+
 return {
+
   success: false,
-  error: error
+
+  error:
+    error
+
 };
 
 }
