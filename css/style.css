@@ -5,7 +5,7 @@
   --primary-purple: #9b51e0;
   --text-main: #ffffff;
   --text-muted: #8c9bb3;
-  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* --- Style général --- */
@@ -32,94 +32,60 @@ body {
   max-width: 412px;
   height: 100vh;
   max-height: 892px;
-  background: radial-gradient(circle at top center, #111b33 0%, var(--bg-dark) 75%);
+  background-color: var(--bg-dark);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 48px 24px 36px 24px;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 24px;
   position: relative;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
-  border: 1px solid var(--border-color);
 }
 
-/* --- Section Logo & Slogan intégrés --- */
+/* --- Section Logo, Titre & Slogan --- */
 .brand-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 30px;
   text-align: center;
+  margin-bottom: 60px;
 }
 
-/* Image du logo officiel */
 .logo-image {
-  width: 110px;
-  height: 110px;
+  width: 120px;
+  height: 120px;
   object-fit: contain;
-  border-radius: 26px;
-  margin-bottom: 20px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 24px;
 }
 
-/* Nom de la marque */
 .brand-title {
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 700;
   letter-spacing: -0.5px;
-  margin-bottom: 12px;
-}
-
-.brand-title .text-white {
+  margin-bottom: 10px;
   color: var(--text-main);
 }
 
-.brand-title .text-gradient {
-  background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Slogan identique à l'image */
 .brand-tagline {
   font-size: 11px;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 4px;
   font-weight: 500;
-}
-
-.brand-tagline .line-blue {
-  display: inline-block;
-  width: 20px;
-  height: 1.5px;
-  background-color: var(--primary-blue);
-}
-
-.brand-tagline .line-purple {
-  display: inline-block;
-  width: 20px;
-  height: 1.5px;
-  background-color: var(--primary-purple);
 }
 
 /* --- Section Actions / Boutons --- */
 .actions-section {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   width: 100%;
+  max-width: 360px;
 }
 
 .btn {
-  width: 100%;
-  padding: 16px;
-  border-radius: 14px;
-  font-size: 15px;
+  flex: 1;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -129,58 +95,24 @@ body {
   text-decoration: none;
 }
 
+.btn-outline {
+  background: transparent;
+  color: var(--primary-blue);
+  border: 1px solid var(--border-color);
+}
+
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--primary-blue);
+}
+
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
   color: var(--text-main);
-  box-shadow: 0 8px 20px rgba(155, 81, 224, 0.25);
+  box-shadow: 0 4px 15px rgba(155, 81, 224, 0.3);
 }
 
 .btn-primary:hover {
   opacity: 0.92;
   transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(155, 81, 224, 0.35);
-}
-
-.btn-outline {
-  background: transparent;
-  color: var(--text-main);
-  border: 1.5px solid var(--border-color);
-}
-
-.btn-outline:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-}
-
-/* --- Pied de page --- */
-.footer-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.ai-powered {
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-size: 10px;
-}
-
-.footer-links {
-  display: flex;
-  gap: 16px;
-}
-
-.footer-links a {
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.footer-links a:hover {
-  color: var(--primary-blue);
-  text-decoration: underline;
 }
