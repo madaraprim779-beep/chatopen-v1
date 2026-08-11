@@ -1,0 +1,205 @@
+<!DOCTYPE html><html lang="fr"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>Contacts - ChatOpen</title>  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="chat.css">  <style>
+    .contacts-page {
+      width: 100%;
+      max-width: 480px;
+      height: 100dvh;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      background: #071018;
+      color: #fff;
+    }
+
+    .contacts-header {
+      height: 68px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #0c1721;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .back-button {
+      width: 40px;
+      height: 40px;
+      border: 0;
+      background: transparent;
+      color: #fff;
+      font-size: 25px;
+      cursor: pointer;
+    }
+
+    .contacts-header h1 {
+      font-size: 19px;
+    }
+
+    .contacts-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 15px;
+    }
+
+    .contacts-search {
+      height: 48px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      border-radius: 14px;
+      background: #14232f;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+
+    .contacts-search input {
+      flex: 1;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .contacts-search input::placeholder {
+      color: #718392;
+    }
+
+    .search-result-title {
+      margin: 24px 4px 10px;
+      color: #8192a1;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+    }
+
+    .user-result {
+      padding: 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-radius: 14px;
+      background: #0d1a25;
+      border: 1px solid rgba(255,255,255,.05);
+    }
+
+    .result-avatar {
+      width: 50px;
+      height: 50px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#00c8f5,#7355e8);
+      font-weight: 700;
+    }
+
+    .result-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .result-name {
+      font-size: 15px;
+      font-weight: 650;
+    }
+
+    .result-username {
+      margin-top: 4px;
+      color: #718392;
+      font-size: 12px;
+    }
+
+    .add-user {
+      padding: 9px 13px;
+      border: 0;
+      border-radius: 10px;
+      background: #00c8f5;
+      color: #001018;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .no-results {
+      padding: 50px 20px;
+      text-align: center;
+      color: #718392;
+      font-size: 13px;
+    }
+
+    .no-results strong {
+      display: block;
+      margin-bottom: 7px;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    @media (min-width: 700px) {
+      body {
+        padding: 20px;
+      }
+
+      .contacts-page {
+        height: min(900px, 100vh);
+        border-radius: 25px;
+        overflow: hidden;
+        box-shadow: 0 25px 70px rgba(0,0,0,.55);
+      }
+    }
+  </style></head><body>  <div class="contacts-page"><header class="contacts-header">
+
+  <button
+    class="back-button"
+    id="backButton"
+    aria-label="Retour"
+  >
+    ‹
+  </button>
+
+  <h1>Contacts</h1>
+
+</header>
+
+
+<main class="contacts-content">
+
+  <div class="contacts-search">
+
+    <span>🔍</span>
+
+    <input
+      type="search"
+      id="userSearch"
+      placeholder="Nom ou identifiant ChatOpen"
+      autocomplete="off"
+    >
+
+  </div>
+
+
+  <div class="search-result-title">
+    Rechercher une personne
+  </div>
+
+
+  <div id="results">
+
+    <div class="no-results">
+
+      <strong>Retrouver quelqu'un</strong>
+
+      Recherche son nom ou son identifiant
+      ChatOpen pour commencer une discussion.
+
+    </div>
+
+  </div>
+
+</main>
+
+  </div>  <script type="module" src="js/contacts.js"></script></body></html>
