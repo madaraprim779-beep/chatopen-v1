@@ -1,29 +1,30 @@
 <!DOCTYPE html><html lang="fr"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>ChatOpen</title>  <link rel="stylesheet" href="style.css">
-</head><body>  <div class="chatopen-app"><!-- HEADER -->
-<header class="topbar">
+  <link rel="stylesheet" href="chat.css">
+</head><body>  <div class="chat-app"><!-- HEADER -->
+<header class="chat-header">
 
-  <div class="profile-area">
+  <div class="header-left">
 
-    <div class="avatar">
-      <span id="userInitial">C</span>
+    <div class="my-avatar" id="myAvatar">
+      <span id="myInitial">C</span>
     </div>
 
-    <div class="user-info">
-      <h2>ChatOpen</h2>
-      <span id="onlineStatus">En ligne</span>
+    <div class="header-title">
+      <h1>ChatOpen</h1>
+      <span id="myStatus">En ligne</span>
     </div>
 
   </div>
 
-  <div class="top-actions">
+  <div class="header-actions">
 
-    <button class="icon-btn" id="searchBtn" aria-label="Rechercher">
+    <button class="header-btn" id="searchButton">
       🔍
     </button>
 
-    <button class="icon-btn" id="menuBtn" aria-label="Menu">
+    <button class="header-btn" id="menuButton">
       ⋮
     </button>
 
@@ -32,114 +33,162 @@
 </header>
 
 
-<!-- RECHERCHE -->
-<div class="search-box" id="searchBox">
+<!-- BARRE DE RECHERCHE -->
+<div class="chat-search" id="chatSearch">
 
-  <input
-    type="search"
-    id="searchInput"
-    placeholder="Rechercher une personne..."
-    autocomplete="off"
-  >
+  <div class="search-input-wrapper">
+
+    <span>🔍</span>
+
+    <input
+      type="search"
+      id="searchInput"
+      placeholder="Rechercher une conversation"
+      autocomplete="off"
+    >
+
+    <button id="closeSearch">×</button>
+
+  </div>
 
 </div>
 
 
-<!-- LISTE DES DISCUSSIONS -->
+<!-- TITRE -->
+<div class="section-header">
+
+  <h2>Discussions</h2>
+
+  <button id="editButton">
+    Modifier
+  </button>
+
+</div>
+
+
+<!-- CONVERSATIONS -->
 <main class="conversation-list" id="conversationList">
 
-  <div class="empty-state" id="emptyState">
+  <!-- Les conversations Firebase apparaîtront ici -->
 
-    <div class="empty-icon">
+  <div class="empty-chat" id="emptyChat">
+
+    <div class="empty-chat-icon">
       💬
     </div>
 
-    <h3>Aucune discussion</h3>
+    <h3>Bienvenue sur ChatOpen</h3>
 
     <p>
-      Commence une nouvelle conversation
-      avec quelqu'un sur ChatOpen.
+      Tes conversations apparaîtront ici.
+      Commence une nouvelle discussion.
     </p>
-
-    <button class="new-chat-btn" id="newChatBtn">
-      Nouvelle discussion
-    </button>
 
   </div>
 
 </main>
 
 
-<!-- BOUTON NOUVELLE DISCUSSION -->
+<!-- NOUVELLE DISCUSSION -->
 <button
-  class="floating-btn"
-  id="floatingNewChat"
+  class="new-chat-button"
+  id="newChatButton"
   aria-label="Nouvelle discussion"
 >
-  +
+  <span>＋</span>
 </button>
 
 
 <!-- NAVIGATION -->
-<nav class="bottom-nav">
+<nav class="bottom-navigation">
 
-  <button class="nav-item active">
+  <button class="bottom-item active">
 
-    <span class="nav-icon">💬</span>
+    <span class="bottom-icon">💬</span>
     <span>Discussions</span>
 
   </button>
 
-  <button class="nav-item" id="contactsBtn">
+  <button class="bottom-item" id="contactsButton">
 
-    <span class="nav-icon">👥</span>
+    <span class="bottom-icon">👥</span>
     <span>Contacts</span>
 
   </button>
 
-  <button class="nav-item" id="profileBtn">
+  <button class="bottom-item" id="profileButton">
 
-    <span class="nav-icon">👤</span>
+    <span class="bottom-icon">👤</span>
     <span>Profil</span>
 
   </button>
 
-  <button class="nav-item" id="settingsBtn">
+  <button class="bottom-item" id="settingsButton">
 
-    <span class="nav-icon">⚙️</span>
+    <span class="bottom-icon">⚙️</span>
     <span>Réglages</span>
 
   </button>
 
 </nav>
 
-  </div>  <!-- MENU -->  <div class="menu-overlay" id="menuOverlay"><div class="side-menu">
 
-  <button id="closeMenu" class="close-menu">
-    ×
-  </button>
+<!-- MENU LATÉRAL -->
+<div class="menu-overlay" id="menuOverlay">
 
-  <h2>ChatOpen</h2>
+  <div class="side-menu">
 
-  <button>
-    👤 Mon profil
-  </button>
+    <button class="close-menu" id="closeMenu">
+      ×
+    </button>
 
-  <button>
-    🎨 Thème des discussions
-  </button>
+    <div class="menu-profile">
 
-  <button>
-    🔔 Notifications
-  </button>
+      <div class="menu-avatar" id="menuAvatar">
+        C
+      </div>
 
-  <button>
-    🔒 Confidentialité
-  </button>
+      <h2 id="menuName">
+        Utilisateur
+      </h2>
 
-  <button>
-    ⚙️ Réglages
-  </button>
+      <span id="menuUsername">
+        @chatopen
+      </span>
+
+    </div>
+
+
+    <div class="menu-links">
+
+      <button id="menuProfile">
+        👤
+        <span>Mon profil</span>
+      </button>
+
+      <button id="menuContacts">
+        👥
+        <span>Contacts</span>
+      </button>
+
+      <button id="menuThemes">
+        🎨
+        <span>Thème des discussions</span>
+      </button>
+
+      <button id="menuSettings">
+        ⚙️
+        <span>Réglages</span>
+      </button>
+
+      <button id="logoutButton" class="logout">
+        ↪
+        <span>Se déconnecter</span>
+      </button>
+
+    </div>
+
+  </div>
 
 </div>
 
