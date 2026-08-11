@@ -1,73 +1,394 @@
-<!DOCTYPE html><html lang="fr">
-<head>
+<!DOCTYPE html><html lang="fr"><head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Créer un compte — ChatOpen</title>
-  <link rel="stylesheet" href="style.css">
-</head><body class="auth-page">  <main class="auth-container"><div class="auth-logo">
-  <div class="logo-circle">C</div>
-  <h1>ChatOpen</h1>
-  <p>Discutez simplement avec vos proches.</p>
-</div>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>Créer un compte - ChatOpen</title>  <link rel="stylesheet" href="style.css">  <style>
+    .register-page {
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
 
-<section class="auth-card">
+    .register-card {
+      width: 100%;
+      max-width: 400px;
+      padding: 28px 22px;
+      border-radius: 22px;
+      background: #0d1822;
+      border: 1px solid rgba(255,255,255,.07);
+    }
 
-  <h2>Créer votre compte</h2>
-  <p class="auth-subtitle">
-    Rejoignez ChatOpen gratuitement
+    .register-card h1 {
+      font-size: 25px;
+      margin-bottom: 7px;
+    }
+
+    .register-card .description {
+      color: #8192a1;
+      font-size: 13px;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 7px;
+      color: #b5c1cb;
+      font-size: 12px;
+    }
+
+    .form-group input {
+      width: 100%;
+      height: 49px;
+      padding: 0 14px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 13px;
+      outline: none;
+      background: #14232f;
+      color: white;
+      font-size: 14px;
+    }
+
+    .form-group input:focus {
+      border-color: #00c8f5;
+    }
+
+    .register-button {
+      width: 100%;
+      height: 50px;
+      margin-top: 8px;
+      border: 0;
+      border-radius: 13px;
+      background: linear-gradient(135deg,#00c8f5,#7355e8);
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .register-button:disabled {
+      opacity: .6;
+    }
+
+    .error-message {
+      display: none;
+      margin-top: 14px;
+      padding: 11px;
+      border-radius: 10px;
+      background: rgba(255,82,99,.1);
+      color: #ff6977;
+      font-size: 12px;
+    }
+
+    .success-card {
+      display: none;
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 15px;
+      background: #102631;
+      border: 1px solid rgba(0,200,245,.2);
+      text-align: center;
+    }
+
+    .success-card h2 {
+      font-size: 17px;
+      margin-bottom: 7px;
+    }
+
+    .success-card p {
+      color: #8192a1;
+      font-size: 12px;
+    }
+
+    .chatopen-id {
+      margin: 15px 0;
+      padding: 13px;
+      border-radius: 11px;
+      background: #071018;
+      color: #00c8f5;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 3px;
+    }
+
+    .continue-button {
+      width: 100%;
+      height: 45px;
+      border: 0;
+      border-radius: 11px;
+      background: #00c8f5;
+      color: #001018;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style></head><body>  <main class="register-page"><section class="register-card">
+
+  <h1>Créer ton compte</h1>
+
+  <p class="description">
+    Rejoins ChatOpen et discute avec tes amis.
   </p>
+
 
   <form id="registerForm">
 
-    <div class="input-group">
-      <label for="name">Nom d'utilisateur</label>
+    <div class="form-group">
+
+      <label for="name">
+        Nom
+      </label>
+
       <input
         type="text"
         id="name"
-        placeholder="Votre nom"
-        autocomplete="username"
+        placeholder="Ton nom"
         required
+        maxlength="30"
       >
+
     </div>
 
-    <div class="input-group">
-      <label for="password">Mot de passe</label>
+
+    <div class="form-group">
+
+      <label for="email">
+        Adresse e-mail
+      </label>
+
+      <input
+        type="email"
+        id="email"
+        placeholder="exemple@email.com"
+        required
+      >
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label for="password">
+        Mot de passe
+      </label>
+
       <input
         type="password"
         id="password"
-        placeholder="Créer un mot de passe"
-        autocomplete="new-password"
+        placeholder="Minimum 6 caractères"
         minlength="6"
         required
       >
+
     </div>
 
-    <div class="input-group">
-      <label for="confirmPassword">Confirmer le mot de passe</label>
-      <input
-        type="password"
-        id="confirmPassword"
-        placeholder="Confirmer votre mot de passe"
-        autocomplete="new-password"
-        minlength="6"
-        required
-      >
-    </div>
 
-    <p id="registerMessage" class="form-message"></p>
-
-    <button type="submit" class="auth-button">
+    <button
+      type="submit"
+      class="register-button"
+      id="registerButton"
+    >
       Créer mon compte
     </button>
 
   </form>
 
-  <div class="auth-footer">
-    <span>Vous avez déjà un compte ?</span>
-    <a href="index.html">Se connecter</a>
+
+  <div
+    class="error-message"
+    id="errorMessage"
+  ></div>
+
+
+  <div
+    class="success-card"
+    id="successCard"
+  >
+
+    <h2>Compte créé !</h2>
+
+    <p>
+      Voici ton identifiant ChatOpen.
+      Tu peux le partager pour que tes amis te retrouvent.
+    </p>
+
+    <div
+      class="chatopen-id"
+      id="chatOpenId"
+    >
+      00000000
+    </div>
+
+    <button
+      class="continue-button"
+      id="continueButton"
+    >
+      Continuer vers ChatOpen
+    </button>
+
   </div>
 
 </section>
 
-  </main>  <script type="module" src="js/auth.js"></script></body>
-</html>
+  </main>  <script type="module">
+
+    import {
+      registerUser
+    } from "./js/auth.js";
+
+
+    const form =
+      document.getElementById("registerForm");
+
+    const button =
+      document.getElementById("registerButton");
+
+    const errorMessage =
+      document.getElementById("errorMessage");
+
+    const successCard =
+      document.getElementById("successCard");
+
+    const chatOpenId =
+      document.getElementById("chatOpenId");
+
+    const continueButton =
+      document.getElementById("continueButton");
+
+
+    form.addEventListener(
+      "submit",
+      async (event) => {
+
+        event.preventDefault();
+
+
+        const name =
+          document
+            .getElementById("name")
+            .value
+            .trim();
+
+
+        const email =
+          document
+            .getElementById("email")
+            .value
+            .trim();
+
+
+        const password =
+          document
+            .getElementById("password")
+            .value;
+
+
+        errorMessage.style.display =
+          "none";
+
+
+        button.disabled = true;
+
+        button.textContent =
+          "Création...";
+
+
+        const result =
+          await registerUser(
+            name,
+            email,
+            password
+          );
+
+
+        if (!result.success) {
+
+          button.disabled = false;
+
+          button.textContent =
+            "Créer mon compte";
+
+
+          errorMessage.textContent =
+            getErrorMessage(
+              result.error
+            );
+
+
+          errorMessage.style.display =
+            "block";
+
+
+          return;
+        }
+
+
+        chatOpenId.textContent =
+          result.chatOpenId;
+
+
+        form.style.display =
+          "none";
+
+
+        successCard.style.display =
+          "block";
+
+      }
+    );
+
+
+    continueButton.addEventListener(
+      "click",
+      () => {
+
+        window.location.href =
+          "chat.html";
+
+      }
+    );
+
+
+    function getErrorMessage(error) {
+
+      const code =
+        error?.code || "";
+
+
+      if (
+        code ===
+        "auth/email-already-in-use"
+      ) {
+
+        return "Cette adresse e-mail est déjà utilisée.";
+
+      }
+
+
+      if (
+        code ===
+        "auth/invalid-email"
+      ) {
+
+        return "Adresse e-mail invalide.";
+
+      }
+
+
+      if (
+        code ===
+        "auth/weak-password"
+      ) {
+
+        return "Le mot de passe doit contenir au moins 6 caractères.";
+
+      }
+
+
+      return "Impossible de créer le compte. Vérifie les informations.";
+
+    }
+
+  </script></body></html>
