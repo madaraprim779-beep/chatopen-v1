@@ -1,217 +1,602 @@
-<!DOCTYPE html><html lang="fr"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>Conversation - ChatOpen</title>  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="conversation.css">
-</head><body>  <div class="conversation-app"><!-- =================================
-     HEADER
-     ================================= -->
+import {
+auth,
+db
+} from "./firebase.js";
 
-<header class="conversation-header">
+import {
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  <button
-    class="back-button"
-    id="backButton"
-    aria-label="Retour"
-  >
-    ‹
-  </button>
+import {
+collection,
+doc,
+addDoc,
+setDoc,
+query,
+orderBy,
+onSnapshot,
+serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* =========================================
+ÉLÉMENTS
+========================================= */
 
-  <div
-    class="person-avatar"
-    id="personAvatar"
-  >
-    U
-  </div>
+const messagesContainer =
+document.getElementById("messagesContainer");
 
+const messages =
+document.getElementById("messages");
 
-  <div class="person-info">
+const messageInput =
+document.getElementById("messageInput");
 
-    <h1 id="personName">
-      Utilisateur
-    </h1>
+const sendButton =
+document.getElementById("sendButton");
 
-    <span id="personStatus">
-      Hors ligne
-    </span>
+const backButton =
+document.getElementById("backButton");
 
-  </div>
+const personName =
+document.getElementById("personName");
 
+const personAvatar =
+document.getElementById("personAvatar");
 
-  <div class="conversation-actions">
+const personStatus =
+document.getElementById("personStatus");
 
-    <button
-      id="voiceCallButton"
-      class="conversation-action"
-      aria-label="Appel vocal"
-    >
-      ☎
-    </button>
+const voiceCallButton =
+document.getElementById("voiceCallButton");
 
-    <button
-      id="videoCallButton"
-      class="conversation-action"
-      aria-label="Appel vidéo"
-    >
-      ▣
-    </button>
+const videoCallButton =
+document.getElementById("videoCallButton");
 
-    <button
-      id="conversationMenu"
-      class="conversation-action"
-      aria-label="Menu"
-    >
-      ⋮
-    </button>
+/* =========================================
+ID CONVERSATION
+========================================= */
 
-  </div>
+const params =
+new URLSearchParams(
+window.location.search
+);
 
-</header>
+const conversationId =
+params.get("id");
 
+let currentUser = null;
 
-<!-- =================================
-     MESSAGES
-     ================================= -->
+let unsubscribeMessages = null;
 
-<main
-  class="messages-container"
-  id="messagesContainer"
->
+/* =========================================
+VÉRIFICATION
+========================================= */
 
-  <div
-    class="messages"
-    id="messages"
-  >
+if (!conversationId) {
 
-    <!-- Les messages Firebase apparaîtront ici -->
+window.location.href =
+"chat.html";
 
-  </div>
+}
 
-</main>
+/* =========================================
+AUTHENTIFICATION
+========================================= */
 
+onAuthStateChanged(
+auth,
+async (user) => {
 
-<!-- =================================
-     RÉPONSE
-     ================================= -->
+if (!user) {
 
-<div
-  class="reply-preview"
-  id="replyPreview"
->
+  window.location.href =
+    "index.html";
 
-  <div>
+  return;
 
-    <strong id="replyName">
-      Réponse
-    </strong>
+}
 
-    <p id="replyText">
-      Message
-    </p>
+currentUser = user;
 
-  </div>
+await loadConversation();
 
-  <button id="cancelReply">
-    ×
-  </button>
+listenToMessages();
 
-</div>
+}
+);
 
+/* =========================================
+CHARGER LA CONVERSATION
+========================================= */
 
-<!-- =================================
-     ZONE D'ÉCRITURE
-     ================================= -->
+async function loadConversation() {
 
-<footer class="message-composer">
+try {
 
-  <button
-    class="composer-button"
-    id="emojiButton"
-    aria-label="Emoji"
-  >
-    ☺
-  </button>
+const conversationRef =
+  doc(
+    db,
+    "conversations",
+    conversationId
+  );
 
 
-  <div class="message-input-wrapper">
+/*
+  On écoute également le document
+  de conversation pour récupérer
+  le nom de l'autre personne.
+*/
 
-    <input
-      type="text"
-      id="messageInput"
-      placeholder="Écrire un message..."
-      autocomplete="off"
-      maxlength="4000"
-    >
+onSnapshot(
+  conversationRef,
+  (snapshot) => {
 
+    if (!snapshot.exists()) {
 
-    <button
-      id="attachmentButton"
-      aria-label="Pièce jointe"
-    >
-      📎
-    </button>
+      window.location.href =
+        "chat.html";
 
-  </div>
+      return;
 
-
-  <button
-    class="composer-button"
-    id="voiceButton"
-    aria-label="Message vocal"
-  >
-    🎙
-  </button>
+    }
 
 
-  <button
-    class="send-button"
-    id="sendButton"
-    aria-label="Envoyer"
-  >
-    ➤
-  </button>
-
-</footer>
+    const data =
+      snapshot.data();
 
 
-<!-- =================================
-     MENU
-     ================================= -->
+    const participants =
+      data.participants || [];
 
-<div
-  class="conversation-menu-overlay"
-  id="conversationMenuOverlay"
->
 
-  <div class="conversation-menu">
+    const otherUid =
+      participants.find(
+        uid =>
+          uid !== currentUser.uid
+      );
 
-    <button id="closeConversationMenu">
-      ×
-    </button>
 
-    <h2>Conversation</h2>
+    if (
+      data.otherUserId ===
+      otherUid
+    ) {
 
-    <button id="searchMessages">
-      🔍 Rechercher dans la discussion
-    </button>
+      updatePerson(
+        data.otherUserName
+      );
 
-    <button id="muteConversation">
-      🔕 Notifications
-    </button>
+    } else {
 
-    <button id="clearConversation">
-      🗑 Effacer la discussion
-    </button>
+      updatePerson(
+        data.otherUserName
+      );
 
-    <button id="blockUser">
-      🚫 Bloquer
-    </button>
+    }
 
-  </div>
+  }
+);
 
-</div>
+} catch (error) {
 
-  </div>  <script
-    type="module"
-    src="js/conversation.js"
-  ></script></body></html>
+console.error(
+  "Erreur conversation :",
+  error
+);
+
+}
+
+}
+
+/* =========================================
+AFFICHER LE CONTACT
+========================================= */
+
+function updatePerson(name) {
+
+const finalName =
+name ||
+"Utilisateur";
+
+personName.textContent =
+finalName;
+
+personAvatar.textContent =
+finalName
+.charAt(0)
+.toUpperCase();
+
+personStatus.textContent =
+"Conversation";
+
+}
+
+/* =========================================
+ÉCOUTER LES MESSAGES
+========================================= */
+
+function listenToMessages() {
+
+if (unsubscribeMessages) {
+
+unsubscribeMessages();
+
+}
+
+const messagesRef =
+collection(
+db,
+"conversations",
+conversationId,
+"messages"
+);
+
+const messagesQuery =
+query(
+messagesRef,
+orderBy(
+"createdAt",
+"asc"
+)
+);
+
+unsubscribeMessages =
+onSnapshot(
+messagesQuery,
+(snapshot) => {
+
+    messages.innerHTML = "";
+
+
+    snapshot.forEach(
+      (messageDoc) => {
+
+        renderMessage(
+          messageDoc.id,
+          messageDoc.data()
+        );
+
+      }
+    );
+
+
+    scrollToBottom();
+
+  },
+
+  (error) => {
+
+    console.error(
+      "Erreur messages :",
+      error
+    );
+
+  }
+);
+
+}
+
+/* =========================================
+AFFICHER UN MESSAGE
+========================================= */
+
+function renderMessage(
+messageId,
+data
+) {
+
+const isMine =
+data.senderId ===
+currentUser.uid;
+
+const row =
+document.createElement("div");
+
+row.className =
+"message-row ${ isMine ? "sent" : "received" }";
+
+const bubble =
+document.createElement("div");
+
+bubble.className =
+"message-bubble";
+
+const text =
+document.createElement("span");
+
+text.className =
+"message-text";
+
+text.textContent =
+data.text || "";
+
+const meta =
+document.createElement("span");
+
+meta.className =
+"message-meta";
+
+const time =
+formatTime(
+data.createdAt
+);
+
+meta.innerHTML = `
+
+<span>${time}</span>
+
+${
+  isMine
+    ? `<span class="message-check">✓✓</span>`
+    : ""
+}
+
+`;
+
+bubble.appendChild(
+text
+);
+
+bubble.appendChild(
+meta
+);
+
+row.appendChild(
+bubble
+);
+
+/*
+Un clic droit / appui long
+pourra être utilisé plus tard
+pour répondre, copier ou supprimer.
+*/
+
+row.dataset.messageId =
+messageId;
+
+messages.appendChild(
+row
+);
+
+}
+
+/* =========================================
+ENVOYER UN MESSAGE
+========================================= */
+
+async function sendMessage() {
+
+if (!currentUser) return;
+
+const text =
+messageInput.value.trim();
+
+if (!text) return;
+
+if (text.length > 4000) {
+
+return;
+
+}
+
+/*
+Désactive temporairement
+le bouton pour éviter
+les doubles clics.
+*/
+
+sendButton.disabled =
+true;
+
+try {
+
+const messagesRef =
+  collection(
+    db,
+    "conversations",
+    conversationId,
+    "messages"
+  );
+
+
+await addDoc(
+  messagesRef,
+  {
+
+    senderId:
+      currentUser.uid,
+
+    text:
+      text,
+
+    type:
+      "text",
+
+    createdAt:
+      serverTimestamp()
+
+  }
+);
+
+
+/*
+  Mettre à jour le dernier message
+  de la conversation.
+*/
+
+await setDoc(
+  doc(
+    db,
+    "conversations",
+    conversationId
+  ),
+  {
+
+    lastMessage:
+      text,
+
+    lastMessageAt:
+      serverTimestamp(),
+
+    lastSenderId:
+      currentUser.uid
+
+  },
+  {
+    merge: true
+  }
+);
+
+
+messageInput.value = "";
+
+messageInput.focus();
+
+} catch (error) {
+
+console.error(
+  "Erreur envoi message :",
+  error
+);
+
+
+alert(
+  "Impossible d'envoyer le message."
+);
+
+} finally {
+
+sendButton.disabled =
+  false;
+
+}
+
+}
+
+/* =========================================
+BOUTON ENVOYER
+========================================= */
+
+sendButton?.addEventListener(
+"click",
+sendMessage
+);
+
+/* =========================================
+ENTRÉE CLAVIER
+========================================= */
+
+messageInput?.addEventListener(
+"keydown",
+(event) => {
+
+if (
+  event.key === "Enter" &&
+  !event.shiftKey
+) {
+
+  event.preventDefault();
+
+  sendMessage();
+
+}
+
+}
+);
+
+/* =========================================
+RETOUR
+========================================= */
+
+backButton?.addEventListener(
+"click",
+() => {
+
+window.location.href =
+  "chat.html";
+
+}
+);
+
+/* =========================================
+SCROLL
+========================================= */
+
+function scrollToBottom() {
+
+requestAnimationFrame(
+() => {
+
+  messagesContainer.scrollTop =
+    messagesContainer.scrollHeight;
+
+}
+
+);
+
+}
+
+/* =========================================
+HEURE
+========================================= */
+
+function formatTime(timestamp) {
+
+if (!timestamp) {
+
+return "";
+
+}
+
+try {
+
+const date =
+  timestamp.toDate
+    ? timestamp.toDate()
+    : new Date(timestamp);
+
+
+return date.toLocaleTimeString(
+  "fr-FR",
+  {
+    hour: "2-digit",
+    minute: "2-digit"
+  }
+);
+
+} catch {
+
+return "";
+
+}
+
+}
+
+/* =========================================
+APPEL VOCAL
+========================================= */
+
+voiceCallButton?.addEventListener(
+"click",
+() => {
+
+alert(
+  "Les appels vocaux seront ajoutés dans la prochaine étape."
+);
+
+}
+);
+
+/* =========================================
+APPEL VIDÉO
+========================================= */
+
+videoCallButton?.addEventListener(
+"click",
+() => {
+
+alert(
+  "Les appels vidéo seront ajoutés dans la prochaine étape."
+);
+
+}
+);
