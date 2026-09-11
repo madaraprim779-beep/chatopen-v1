@@ -1,602 +1,1016 @@
 import {
-auth,
-db
+  auth,
+  db,
+  storage
 } from "./firebase.js";
 
 import {
-onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 import {
-collection,
-doc,
-addDoc,
-setDoc,
-query,
-orderBy,
-onSnapshot,
-serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  collection,
+  doc,
+  getDoc,
+  addDoc,
+  setDoc,
+  updateDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
+  arrayUnion
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-/* =========================================
-ÉLÉMENTS
-========================================= */
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js";
 
-const messagesContainer =
-document.getElementById("messagesContainer");
-
-const messages =
-document.getElementById("messages");
-
-const messageInput =
-document.getElementById("messageInput");
-
-const sendButton =
-document.getElementById("sendButton");
-
-const backButton =
-document.getElementById("backButton");
-
-const personName =
-document.getElementById("personName");
-
-const personAvatar =
-document.getElementById("personAvatar");
-
-const personStatus =
-document.getElementById("personStatus");
-
-const voiceCallButton =
-document.getElementById("voiceCallButton");
-
-const videoCallButton =
-document.getElementById("videoCallButton");
-
-/* =========================================
-ID CONVERSATION
-========================================= */
+import {
+  escapeHTML,
+  formatTime
+} from "./utils.js";
 
 const params =
-new URLSearchParams(
-window.location.search
-);
+  new URLSearchParams(location.search);
 
 const conversationId =
-params.get("id");
-
-let currentUser = null;
-
-let unsubscribeMessages = null;
-
-/* =========================================
-VÉRIFICATION
-========================================= */
+  params.get("id");
 
 if (!conversationId) {
-
-window.location.href =
-"chat.html";
-
+  window.location.href = "chat.html";
 }
 
-/* =========================================
-AUTHENTIFICATION
-========================================= */
+const messages =
+  document.querySelector("#messages");
 
+const input =
+  document.querySelector("#messageInput");
+
+const sendButton =
+  document.querySelector("#send");
+
+const typing =
+  document.querySelector("#typing");
+
+const backButton =
+  document.querySelector("#back");
+
+const attachButton =
+  document.querySelector("#attach");
+
+const fileInput =
+  document.querySelector("#fileInput");
+
+const recordButton =
+  document.querySelector("#record");
+
+const personName =
+  document.querySelector("#personName");
+
+const personAvatar =
+  document.querySelector("#personAvatar");
+
+const personStatus =
+  document.querySelector("#personStatus");
+
+let me = null;
+let conversation = null;
+let otherUser = null;
+let typingTimer = null;
+let mediaRecorder = null;
+let voiceChunks = [];
+let unsubscribeMessages = null;
+let unsubscribeTyping = null;
+let unsubscribeOtherUser = null;
+
+/**
+ * Initialisation de la conversation.
+ */
 onAuthStateChanged(
-auth,
-async (user) => {
+  auth,
+  async (user) => {
+    if (!user) {
+      window.location.href =
+        "login.html";
+      return;
+    }
 
-if (!user) {
+    me = user;
 
-  window.location.href =
-    "index.html";
+    try {
+      await initializeConversation();
+    } catch (error) {
+      console.error(
+        "Erreur initialisation conversation :",
+        error
+      );
 
-  return;
-
-}
-
-currentUser = user;
-
-await loadConversation();
-
-listenToMessages();
-
-}
-);
-
-/* =========================================
-CHARGER LA CONVERSATION
-========================================= */
-
-async function loadConversation() {
-
-try {
-
-const conversationRef =
-  doc(
-    db,
-    "conversations",
-    conversationId
-  );
-
-
-/*
-  On écoute également le document
-  de conversation pour récupérer
-  le nom de l'autre personne.
-*/
-
-onSnapshot(
-  conversationRef,
-  (snapshot) => {
-
-    if (!snapshot.exists()) {
+      alert(
+        "Impossible d'ouvrir cette conversation."
+      );
 
       window.location.href =
         "chat.html";
-
-      return;
-
     }
-
-
-    const data =
-      snapshot.data();
-
-
-    const participants =
-      data.participants || [];
-
-
-    const otherUid =
-      participants.find(
-        uid =>
-          uid !== currentUser.uid
-      );
-
-
-    if (
-      data.otherUserId ===
-      otherUid
-    ) {
-
-      updatePerson(
-        data.otherUserName
-      );
-
-    } else {
-
-      updatePerson(
-        data.otherUserName
-      );
-
-    }
-
   }
 );
 
-} catch (error) {
+/**
+ * Charge la conversation et le profil
+ * de l'autre utilisateur.
+ */
+async function initializeConversation() {
+  const conversationRef =
+    doc(
+      db,
+      "conversations",
+      conversationId
+    );
 
-console.error(
-  "Erreur conversation :",
-  error
-);
+  const conversationSnapshot =
+    await getDoc(conversationRef);
 
+  if (!conversationSnapshot.exists()) {
+    throw new Error(
+      "Conversation introuvable."
+    );
+  }
+
+  conversation =
+    conversationSnapshot.data();
+
+  const participants =
+    conversation.participants || [];
+
+  if (
+    !participants.includes(me.uid)
+  ) {
+    throw new Error(
+      "Tu n'es pas membre de cette conversation."
+    );
+  }
+
+  if (
+    conversation.type &&
+    conversation.type !== "private"
+  ) {
+    throw new Error(
+      "Cette page est réservée aux conversations privées."
+    );
+  }
+
+  otherUser =
+    participants.find(
+      (uid) => uid !== me.uid
+    );
+
+  if (!otherUser) {
+    throw new Error(
+      "Destinataire introuvable."
+    );
+  }
+
+  await loadOtherUser();
+
+  listenMessages();
+
+  listenTyping();
+
+  listenOtherUser();
+
+  await markConversationAsRead();
 }
 
+/**
+ * Charge le profil du destinataire.
+ */
+async function loadOtherUser() {
+  const profileSnapshot =
+    await getDoc(
+      doc(
+        db,
+        "users",
+        otherUser
+      )
+    );
+
+  const profile =
+    profileSnapshot.exists()
+      ? profileSnapshot.data()
+      : {};
+
+  updatePersonHeader(profile);
 }
 
-/* =========================================
-AFFICHER LE CONTACT
-========================================= */
+/**
+ * Affiche nom, photo et statut.
+ */
+function updatePersonHeader(profile) {
+  const name =
+    profile.name ||
+    "Utilisateur";
 
-function updatePerson(name) {
+  if (personName) {
+    personName.textContent =
+      name;
+  }
 
-const finalName =
-name ||
-"Utilisateur";
+  if (personAvatar) {
+    if (profile.photoURL) {
+      personAvatar.innerHTML = `
+        <img
+          src="${escapeHTML(
+            profile.photoURL
+          )}"
+          alt=""
+          style="
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            border-radius:50%;
+          "
+        >
+      `;
+    } else {
+      personAvatar.textContent =
+        name.charAt(0).toUpperCase();
+    }
+  }
 
-personName.textContent =
-finalName;
-
-personAvatar.textContent =
-finalName
-.charAt(0)
-.toUpperCase();
-
-personStatus.textContent =
-"Conversation";
-
+  updateStatus(
+    profile.status
+  );
 }
 
-/* =========================================
-ÉCOUTER LES MESSAGES
-========================================= */
+/**
+ * Affiche le statut en ligne.
+ */
+function updateStatus(status) {
+  if (!personStatus) return;
 
-function listenToMessages() {
-
-if (unsubscribeMessages) {
-
-unsubscribeMessages();
-
+  personStatus.textContent =
+    status === "online"
+      ? "en ligne"
+      : "hors ligne";
 }
 
-const messagesRef =
-collection(
-db,
-"conversations",
-conversationId,
-"messages"
-);
+/**
+ * Écoute le profil du destinataire.
+ */
+function listenOtherUser() {
+  unsubscribeOtherUser =
+    onSnapshot(
+      doc(
+        db,
+        "users",
+        otherUser
+      ),
+      (snapshot) => {
+        if (!snapshot.exists()) return;
 
-const messagesQuery =
-query(
-messagesRef,
-orderBy(
-"createdAt",
-"asc"
-)
-);
+        updatePersonHeader(
+          snapshot.data()
+        );
+      }
+    );
+}
 
-unsubscribeMessages =
-onSnapshot(
-messagesQuery,
-(snapshot) => {
+/**
+ * Écoute les messages en temps réel.
+ */
+function listenMessages() {
+  const messagesRef =
+    collection(
+      db,
+      "conversations",
+      conversationId,
+      "messages"
+    );
 
-    messages.innerHTML = "";
+  const messagesQuery =
+    query(
+      messagesRef,
+      orderBy(
+        "createdAt",
+        "asc"
+      )
+    );
 
+  unsubscribeMessages =
+    onSnapshot(
+      messagesQuery,
+      (snapshot) => {
+        const list =
+          snapshot.docs.map(
+            (item) => ({
+              id: item.id,
+              ...item.data()
+            })
+          );
 
-    snapshot.forEach(
-      (messageDoc) => {
+        renderMessages(list);
 
-        renderMessage(
-          messageDoc.id,
-          messageDoc.data()
+        markReceivedMessagesAsRead(
+          list
+        );
+      },
+      (error) => {
+        console.error(
+          "Erreur messages :",
+          error
+        );
+      }
+    );
+}
+
+/**
+ * Affiche les messages.
+ */
+function renderMessages(list) {
+  if (!messages) return;
+
+  messages.innerHTML =
+    list.map((message) => {
+      const mine =
+        message.senderId === me.uid;
+
+      let body = "";
+
+      if (
+        message.type ===
+        "image"
+      ) {
+        body = `
+          <a
+            href="${escapeHTML(
+              message.url || "#"
+            )}"
+            target="_blank"
+            rel="noopener"
+          >
+            <img
+              class="msg-image"
+              src="${escapeHTML(
+                message.url || ""
+              )}"
+              alt="Image"
+            >
+          </a>
+        `;
+      }
+
+      else if (
+        message.type ===
+        "video"
+      ) {
+        body = `
+          <video
+            class="msg-video"
+            controls
+            src="${escapeHTML(
+              message.url || ""
+            )}"
+          ></video>
+        `;
+      }
+
+      else if (
+        message.type ===
+        "voice"
+      ) {
+        body = `
+          <audio
+            controls
+            src="${escapeHTML(
+              message.url || ""
+            )}"
+          ></audio>
+        `;
+      }
+
+      else if (
+        message.type ===
+        "file"
+      ) {
+        body = `
+          <a
+            class="file"
+            href="${escapeHTML(
+              message.url || "#"
+            )}"
+            target="_blank"
+            rel="noopener"
+          >
+            📎
+            ${escapeHTML(
+              message.fileName ||
+              "Fichier"
+            )}
+          </a>
+        `;
+      }
+
+      else {
+        body = `
+          <span>
+            ${escapeHTML(
+              message.text || ""
+            )}
+          </span>
+        `;
+      }
+
+      const read =
+        mine &&
+        Array.isArray(
+          message.readBy
+        ) &&
+        message.readBy.includes(
+          otherUser
         );
 
+      return `
+        <div
+          class="bubble-row ${
+            mine ? "mine" : ""
+          }"
+        >
+          <div class="bubble">
+            ${body}
+
+            <small>
+              ${formatTime(
+                message.createdAt
+              )}
+
+              ${
+                mine
+                  ? read
+                    ? " ✓✓"
+                    : " ✓"
+                  : ""
+              }
+            </small>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+  messages.scrollTop =
+    messages.scrollHeight;
+}
+
+/**
+ * Marque les messages reçus comme lus.
+ */
+async function markReceivedMessagesAsRead(
+  list
+) {
+  const unread =
+    list.filter(
+      (message) =>
+        message.senderId !==
+          me.uid &&
+        !(
+          Array.isArray(
+            message.readBy
+          ) &&
+          message.readBy.includes(
+            me.uid
+          )
+        )
+    );
+
+  for (const message of unread) {
+    try {
+      await updateDoc(
+        doc(
+          db,
+          "conversations",
+          conversationId,
+          "messages",
+          message.id
+        ),
+        {
+          readBy:
+            arrayUnion(me.uid)
+        }
+      );
+    } catch (error) {
+      console.warn(
+        "Impossible de marquer le message comme lu :",
+        error
+      );
+    }
+  }
+}
+
+/**
+ * Marque toute la conversation comme lue.
+ */
+async function markConversationAsRead() {
+  try {
+    await updateDoc(
+      doc(
+        db,
+        "conversations",
+        conversationId
+      ),
+      {
+        [`unread.${me.uid}`]: 0,
+
+        [`lastRead.${me.uid}`]:
+          serverTimestamp()
+      }
+    );
+  } catch (error) {
+    console.warn(
+      "Lecture conversation :",
+      error
+    );
+  }
+}
+
+/**
+ * Envoie un message.
+ */
+async function sendMessage(
+  text,
+  type = "text",
+  extra = {}
+) {
+  const cleanText =
+    String(text || "").trim();
+
+  if (
+    type === "text" &&
+    !cleanText
+  ) {
+    return;
+  }
+
+  if (!me || !otherUser) {
+    return;
+  }
+
+  if (sendButton) {
+    sendButton.disabled = true;
+  }
+
+  try {
+    await addDoc(
+      collection(
+        db,
+        "conversations",
+        conversationId,
+        "messages"
+      ),
+      {
+        senderId: me.uid,
+
+        text:
+          type === "text"
+            ? cleanText
+            : "",
+
+        type,
+
+        createdAt:
+          serverTimestamp(),
+
+        readBy: [me.uid],
+
+        ...extra
       }
     );
 
+    const currentUnread =
+      Number(
+        conversation?.unread?.[
+          otherUser
+        ] || 0
+      );
 
-    scrollToBottom();
+    const preview =
+      type === "text"
+        ? cleanText
+        : type === "voice"
+        ? "🎙 Message vocal"
+        : type === "image"
+        ? "📷 Photo"
+        : type === "video"
+        ? "🎥 Vidéo"
+        : "📎 Fichier";
 
-  },
+    await updateDoc(
+      doc(
+        db,
+        "conversations",
+        conversationId
+      ),
+      {
+        lastMessage:
+          preview,
 
-  (error) => {
+        lastMessageAt:
+          serverTimestamp(),
 
+        lastSenderId:
+          me.uid,
+
+        [`unread.${otherUser}`]:
+          currentUnread + 1
+      }
+    );
+
+    conversation.unread = {
+      ...(conversation.unread || {}),
+      [otherUser]:
+        currentUnread + 1
+    };
+
+    if (input) {
+      input.value = "";
+    }
+
+  } catch (error) {
     console.error(
-      "Erreur messages :",
+      "Erreur envoi message :",
       error
     );
 
+    alert(
+      "Le message n'a pas pu être envoyé."
+    );
+  } finally {
+    if (sendButton) {
+      sendButton.disabled = false;
+    }
   }
-);
-
 }
 
-/* =========================================
-AFFICHER UN MESSAGE
-========================================= */
-
-function renderMessage(
-messageId,
-data
-) {
-
-const isMine =
-data.senderId ===
-currentUser.uid;
-
-const row =
-document.createElement("div");
-
-row.className =
-"message-row ${ isMine ? "sent" : "received" }";
-
-const bubble =
-document.createElement("div");
-
-bubble.className =
-"message-bubble";
-
-const text =
-document.createElement("span");
-
-text.className =
-"message-text";
-
-text.textContent =
-data.text || "";
-
-const meta =
-document.createElement("span");
-
-meta.className =
-"message-meta";
-
-const time =
-formatTime(
-data.createdAt
-);
-
-meta.innerHTML = `
-
-<span>${time}</span>
-
-${
-  isMine
-    ? `<span class="message-check">✓✓</span>`
-    : ""
-}
-
-`;
-
-bubble.appendChild(
-text
-);
-
-bubble.appendChild(
-meta
-);
-
-row.appendChild(
-bubble
-);
-
-/*
-Un clic droit / appui long
-pourra être utilisé plus tard
-pour répondre, copier ou supprimer.
-*/
-
-row.dataset.messageId =
-messageId;
-
-messages.appendChild(
-row
-);
-
-}
-
-/* =========================================
-ENVOYER UN MESSAGE
-========================================= */
-
-async function sendMessage() {
-
-if (!currentUser) return;
-
-const text =
-messageInput.value.trim();
-
-if (!text) return;
-
-if (text.length > 4000) {
-
-return;
-
-}
-
-/*
-Désactive temporairement
-le bouton pour éviter
-les doubles clics.
-*/
-
-sendButton.disabled =
-true;
-
-try {
-
-const messagesRef =
-  collection(
-    db,
-    "conversations",
-    conversationId,
-    "messages"
-  );
-
-
-await addDoc(
-  messagesRef,
-  {
-
-    senderId:
-      currentUser.uid,
-
-    text:
-      text,
-
-    type:
-      "text",
-
-    createdAt:
-      serverTimestamp()
-
-  }
-);
-
-
-/*
-  Mettre à jour le dernier message
-  de la conversation.
-*/
-
-await setDoc(
-  doc(
-    db,
-    "conversations",
-    conversationId
-  ),
-  {
-
-    lastMessage:
-      text,
-
-    lastMessageAt:
-      serverTimestamp(),
-
-    lastSenderId:
-      currentUser.uid
-
-  },
-  {
-    merge: true
-  }
-);
-
-
-messageInput.value = "";
-
-messageInput.focus();
-
-} catch (error) {
-
-console.error(
-  "Erreur envoi message :",
-  error
-);
-
-
-alert(
-  "Impossible d'envoyer le message."
-);
-
-} finally {
-
-sendButton.disabled =
-  false;
-
-}
-
-}
-
-/* =========================================
-BOUTON ENVOYER
-========================================= */
-
+/**
+ * Bouton envoyer.
+ */
 sendButton?.addEventListener(
-"click",
-sendMessage
-);
-
-/* =========================================
-ENTRÉE CLAVIER
-========================================= */
-
-messageInput?.addEventListener(
-"keydown",
-(event) => {
-
-if (
-  event.key === "Enter" &&
-  !event.shiftKey
-) {
-
-  event.preventDefault();
-
-  sendMessage();
-
-}
-
-}
-);
-
-/* =========================================
-RETOUR
-========================================= */
-
-backButton?.addEventListener(
-"click",
-() => {
-
-window.location.href =
-  "chat.html";
-
-}
-);
-
-/* =========================================
-SCROLL
-========================================= */
-
-function scrollToBottom() {
-
-requestAnimationFrame(
-() => {
-
-  messagesContainer.scrollTop =
-    messagesContainer.scrollHeight;
-
-}
-
-);
-
-}
-
-/* =========================================
-HEURE
-========================================= */
-
-function formatTime(timestamp) {
-
-if (!timestamp) {
-
-return "";
-
-}
-
-try {
-
-const date =
-  timestamp.toDate
-    ? timestamp.toDate()
-    : new Date(timestamp);
-
-
-return date.toLocaleTimeString(
-  "fr-FR",
-  {
-    hour: "2-digit",
-    minute: "2-digit"
+  "click",
+  () => {
+    sendMessage(
+      input?.value || ""
+    );
   }
 );
 
-} catch {
+/**
+ * Touche Entrée.
+ */
+input?.addEventListener(
+  "keydown",
+  (event) => {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+      event.preventDefault();
 
-return "";
-
-}
-
-}
-
-/* =========================================
-APPEL VOCAL
-========================================= */
-
-voiceCallButton?.addEventListener(
-"click",
-() => {
-
-alert(
-  "Les appels vocaux seront ajoutés dans la prochaine étape."
+      sendMessage(
+        input.value
+      );
+    }
+  }
 );
 
-}
+/**
+ * Indicateur "écrit..."
+ */
+input?.addEventListener(
+  "input",
+  async () => {
+    if (!me) return;
+
+    try {
+      await setDoc(
+        doc(
+          db,
+          "conversations",
+          conversationId,
+          "typing",
+          me.uid
+        ),
+        {
+          typing: true,
+          at: serverTimestamp()
+        },
+        {
+          merge: true
+        }
+      );
+    } catch (_) {}
+
+    clearTimeout(
+      typingTimer
+    );
+
+    typingTimer =
+      setTimeout(
+        async () => {
+          try {
+            await setDoc(
+              doc(
+                db,
+                "conversations",
+                conversationId,
+                "typing",
+                me.uid
+              ),
+              {
+                typing: false,
+                at: serverTimestamp()
+              },
+              {
+                merge: true
+              }
+            );
+          } catch (_) {}
+        },
+        1500
+      );
+  }
 );
 
-/* =========================================
-APPEL VIDÉO
-========================================= */
+/**
+ * Écoute "écrit..."
+ */
+function listenTyping() {
+  unsubscribeTyping =
+    onSnapshot(
+      doc(
+        db,
+        "conversations",
+        conversationId,
+        "typing",
+        otherUser
+      ),
+      (snapshot) => {
+        if (!typing) return;
 
-videoCallButton?.addEventListener(
-"click",
-() => {
+        typing.textContent =
+          snapshot.exists() &&
+          snapshot.data().typing
+            ? "écrit…"
+            : "";
+      }
+    );
+}
 
-alert(
-  "Les appels vidéo seront ajoutés dans la prochaine étape."
+/**
+ * Fichiers, images et vidéos.
+ */
+attachButton?.addEventListener(
+  "click",
+  () => {
+    fileInput?.click();
+  }
 );
 
-}
+fileInput?.addEventListener(
+  "change",
+  async (event) => {
+    const file =
+      event.target.files?.[0];
+
+    if (!file || !me) return;
+
+    try {
+      attachButton.disabled =
+        true;
+
+      const safeName =
+        file.name.replace(
+          /[^a-zA-Z0-9._-]/g,
+          "_"
+        );
+
+      const path =
+        `attachments/${me.uid}/${conversationId}/${Date.now()}_${safeName}`;
+
+      const storageRef =
+        ref(
+          storage,
+          path
+        );
+
+      const uploaded =
+        await uploadBytes(
+          storageRef,
+          file
+        );
+
+      const url =
+        await getDownloadURL(
+          uploaded.ref
+        );
+
+      let type = "file";
+
+      if (
+        file.type.startsWith(
+          "image/"
+        )
+      ) {
+        type = "image";
+      }
+
+      else if (
+        file.type.startsWith(
+          "video/"
+        )
+      ) {
+        type = "video";
+      }
+
+      await sendMessage(
+        "",
+        type,
+        {
+          url,
+          fileName:
+            file.name,
+          mimeType:
+            file.type,
+          size:
+            file.size
+        }
+      );
+
+    } catch (error) {
+      console.error(
+        "Erreur fichier :",
+        error
+      );
+
+      alert(
+        "Impossible d'envoyer ce fichier."
+      );
+    } finally {
+      attachButton.disabled =
+        false;
+
+      fileInput.value = "";
+    }
+  }
+);
+
+/**
+ * Enregistrement vocal.
+ */
+recordButton?.addEventListener(
+  "click",
+  async () => {
+    if (
+      mediaRecorder?.state ===
+      "recording"
+    ) {
+      mediaRecorder.stop();
+      return;
+    }
+
+    try {
+      const stream =
+        await navigator.mediaDevices.getUserMedia(
+          {
+            audio: true
+          }
+        );
+
+      voiceChunks = [];
+
+      mediaRecorder =
+        new MediaRecorder(
+          stream
+        );
+
+      mediaRecorder.ondataavailable =
+        (event) => {
+          if (
+            event.data.size > 0
+          ) {
+            voiceChunks.push(
+              event.data
+            );
+          }
+        };
+
+      mediaRecorder.onstop =
+        async () => {
+          try {
+            stream
+              .getTracks()
+              .forEach(
+                (track) =>
+                  track.stop()
+              );
+
+            const blob =
+              new Blob(
+                voiceChunks,
+                {
+                  type:
+                    mediaRecorder.mimeType ||
+                    "audio/webm"
+                }
+              );
+
+            const path =
+              `voices/${me.uid}/${conversationId}/${Date.now()}.webm`;
+
+            const storageRef =
+              ref(
+                storage,
+                path
+              );
+
+            const uploaded =
+              await uploadBytes(
+                storageRef,
+                blob
+              );
+
+            const url =
+              await getDownloadURL(
+                uploaded.ref
+              );
+
+            await sendMessage(
+              "",
+              "voice",
+              {
+                url,
+                duration: 0,
+                mimeType:
+                  blob.type,
+                size:
+                  blob.size
+              }
+            );
+
+          } catch (error) {
+            console.error(
+              "Erreur message vocal :",
+              error
+            );
+
+            alert(
+              "Impossible d'envoyer le message vocal."
+            );
+          } finally {
+            if (recordButton) {
+              recordButton.textContent =
+                "🎙";
+            }
+          }
+        };
+
+      mediaRecorder.start();
+
+      recordButton.textContent =
+        "⏹";
+
+    } catch (error) {
+      console.error(
+        "Microphone :",
+        error
+      );
+
+      alert(
+        "Autorise le microphone dans ton navigateur pour envoyer un message vocal."
+      );
+    }
+  }
+);
+
+/**
+ * Retour.
+ */
+backButton?.addEventListener(
+  "click",
+  () => {
+    window.location.href =
+      "chat.html";
+  }
+);
+
+/**
+ * Nettoyage des écouteurs.
+ */
+window.addEventListener(
+  "beforeunload",
+  () => {
+    unsubscribeMessages?.();
+    unsubscribeTyping?.();
+    unsubscribeOtherUser?.();
+  }
 );
