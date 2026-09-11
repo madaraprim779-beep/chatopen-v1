@@ -1,344 +1,232 @@
-import {
-auth,
-db
-} from "./firebase.js";
+import { auth, db } from "./firebase.js";
 
 import {
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-updateProfile
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 import {
-collection,
-query,
-where,
-getDocs,
-doc,
-setDoc,
-serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-/* =========================================
-GÉNÉRER UN ID CHATOPEN UNIQUE
-========================================= */
+import { normalizePhone } from "./utils.js";
 
-async function generateChatOpenId() {
+let confirmationResult = null;
 
-let chatOpenId;
-let exists = true;
-
-while (exists) {
-
-chatOpenId =
-  Math.floor(
-    10000000 +
-    Math.random() * 90000000
-  ).toString();
-
-
-const usersRef =
-  collection(
-    db,
-    "users"
-  );
-
-
-const idQuery =
-  query(
-    usersRef,
-    where(
-      "chatOpenId",
-      "==",
-      chatOpenId
-    )
-  );
-
-
-const result =
-  await getDocs(
-    idQuery
-  );
-
-
-exists =
-  !result.empty;
-
+/**
+ * Normalise le numéro pour avoir la même valeur
+ * dans Firebase et Firestore.
+ */
+function cleanPhone(phone) {
+  return normalizePhone(phone);
 }
 
-return chatOpenId;
-
-}
-
-/* =========================================
-CRÉER UN COMPTE
-========================================= */
-
-export async function registerUser(
-name,
-email,
-password
-) {
-
-try {
-
-/* Vérifications */
-
-name =
-  String(name || "").trim();
-
-email =
-  String(email || "").trim();
-
-password =
-  String(password || "");
-
-
-if (!name) {
-
-  throw new Error(
-    "Le nom est obligatoire."
-  );
-
-}
-
-
-if (!email) {
-
-  throw new Error(
-    "L'adresse e-mail est obligatoire."
-  );
-
-}
-
-
-if (password.length < 6) {
-
-  throw new Error(
-    "Le mot de passe doit contenir au moins 6 caractères."
-  );
-
-}
-
-
-/* ==============================
-   CRÉATION FIREBASE AUTH
-   ============================== */
-
-const credential =
-  await createUserWithEmailAndPassword(
-    auth,
-    email,
-    password
-  );
-
-
-const user =
-  credential.user;
-
-
-/* ==============================
-   GÉNÉRATION ID CHATOPEN
-   ============================== */
-
-const chatOpenId =
-  await generateChatOpenId();
-
-
-/* ==============================
-   NOM FIREBASE
-   ============================== */
-
-await updateProfile(
-  user,
-  {
-    displayName: name
+/**
+ * Crée le reCAPTCHA invisible une seule fois.
+ */
+export function setupRecaptcha(containerId = "recaptcha-container") {
+  if (window.chatOpenRecaptcha) {
+    return window.chatOpenRecaptcha;
   }
-);
 
+  if (!document.getElementById(containerId)) {
+    throw new Error(
+      `Le conteneur reCAPTCHA "${containerId}" est introuvable.`
+    );
+  }
 
-/* ==============================
-   DOCUMENT UTILISATEUR
-   ============================== */
+  const verifier = new RecaptchaVerifier(auth, containerId, {
+    size: "invisible"
+  });
 
-await setDoc(
-  doc(
-    db,
-    "users",
-    user.uid
-  ),
-  {
+  window.chatOpenRecaptcha = verifier;
 
-    uid:
-      user.uid,
+  return verifier;
+}
 
-    name:
-      name,
+/**
+ * Envoie le code SMS.
+ */
+export async function sendPhoneCode(
+  phone,
+  containerId = "recaptcha-container"
+) {
+  const normalizedPhone = cleanPhone(phone);
 
-    nameLower:
-      name.toLowerCase(),
+  if (!normalizedPhone) {
+    throw new Error("Entre un numéro de téléphone.");
+  }
 
-    email:
-      email,
+  const verifier = setupRecaptcha(containerId);
 
-    chatOpenId:
-      chatOpenId,
+  try {
+    confirmationResult = await signInWithPhoneNumber(
+      auth,
+      normalizedPhone,
+      verifier
+    );
+
+    return true;
+  } catch (error) {
+    console.error("Erreur envoi SMS :", error);
+
+    try {
+      await verifier.clear();
+    } catch (_) {}
+
+    window.chatOpenRecaptcha = null;
+
+    throw error;
+  }
+}
+
+/**
+ * Vérifie le code SMS et crée/met à jour le profil.
+ */
+export async function verifyPhoneCode(code, profile = {}) {
+  if (!confirmationResult) {
+    throw new Error("Demande d'abord un code SMS.");
+  }
+
+  const verificationCode = String(code || "").trim();
+
+  if (!verificationCode) {
+    throw new Error("Entre le code SMS reçu.");
+  }
+
+  const credential = await confirmationResult.confirm(
+    verificationCode
+  );
+
+  const user = credential.user;
+
+  if (!user?.uid) {
+    throw new Error("Utilisateur Firebase introuvable.");
+  }
+
+  const userRef = doc(db, "users", user.uid);
+  const existing = await getDoc(userRef);
+
+  const old = existing.exists() ? existing.data() : {};
+
+  const phone =
+    user.phoneNumber ||
+    old.phone ||
+    profile.phone ||
+    "";
+
+  const normalizedPhone = cleanPhone(phone);
+
+  const name =
+    String(
+      profile.name ||
+      old.name ||
+      "Utilisateur"
+    ).trim();
+
+  const profileData = {
+    uid: user.uid,
+
+    // Numéro Firebase vérifié
+    phone: phone,
+
+    // Numéro normalisé pour la recherche ChatOpen
+    phoneNormalized: normalizedPhone,
+
+    name: name,
+
+    nameLower: name.toLowerCase(),
 
     photoURL:
+      old.photoURL ||
+      profile.photoURL ||
       "",
 
-    status:
-      "En ligne",
+    status: "online",
+
+    lastSeen: serverTimestamp(),
 
     createdAt:
-      serverTimestamp()
+      old.createdAt ||
+      serverTimestamp(),
 
-  }
-);
+    privacy: {
+      lastSeen:
+        old.privacy?.lastSeen ?? "everyone",
 
+      profilePhoto:
+        old.privacy?.profilePhoto ?? "everyone",
 
-console.log(
-  "Compte créé avec succès."
-);
+      readReceipts:
+        old.privacy?.readReceipts ?? true
+    }
+  };
 
-console.log(
-  "ID ChatOpen :",
-  chatOpenId
-);
-
-
-return {
-
-  success: true,
-
-  user:
-    user,
-
-  chatOpenId:
-    chatOpenId
-
-};
-
-} catch (error) {
-
-/* ==============================
-   AFFICHER L'ERREUR EXACTE
-   ============================== */
-
-console.error(
-  "ERREUR CRÉATION COMPTE",
-  error
-);
-
-
-let message =
-  error?.message ||
-  "Erreur inconnue";
-
-
-if (error?.code) {
-
-  message =
-    error.code +
-    "\n\n" +
-    message;
-
-}
-
-
-alert(
-  "Erreur Firebase :\n\n" +
-  message
-);
-
-
-return {
-
-  success: false,
-
-  error:
-    error
-
-};
-
-}
-
-}
-
-/* =========================================
-CONNEXION
-========================================= */
-
-export async function loginUser(
-email,
-password
-) {
-
-try {
-
-email =
-  String(email || "").trim();
-
-
-password =
-  String(password || "");
-
-
-const credential =
-  await signInWithEmailAndPassword(
-    auth,
-    email,
-    password
+  await setDoc(
+    userRef,
+    profileData,
+    { merge: true }
   );
 
+  confirmationResult = null;
 
-return {
-
-  success: true,
-
-  user:
-    credential.user
-
-};
-
-} catch (error) {
-
-console.error(
-  "ERREUR CONNEXION",
-  error
-);
-
-
-let message =
-  error?.message ||
-  "Erreur inconnue";
-
-
-if (error?.code) {
-
-  message =
-    error.code +
-    "\n\n" +
-    message;
-
+  return user;
 }
 
+/**
+ * Récupère le profil de l'utilisateur connecté.
+ */
+export async function getCurrentProfile(
+  uid = auth.currentUser?.uid
+) {
+  if (!uid) {
+    return null;
+  }
 
-alert(
-  "Erreur Firebase :\n\n" +
-  message
-);
+  const snapshot = await getDoc(
+    doc(db, "users", uid)
+  );
 
+  if (!snapshot.exists()) {
+    return null;
+  }
 
-return {
-
-  success: false,
-
-  error:
-    error
-
-};
-
+  return {
+    id: snapshot.id,
+    ...snapshot.data()
+  };
 }
 
+/**
+ * Déconnexion.
+ */
+export async function logout() {
+  const user = auth.currentUser;
+
+  if (user) {
+    try {
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          status: "offline",
+          lastSeen: serverTimestamp()
+        },
+        { merge: true }
+      );
+    } catch (error) {
+      console.warn(
+        "Impossible de mettre à jour le statut :",
+        error
+      );
+    }
+  }
+
+  await signOut(auth);
 }
+
+export { onAuthStateChanged };
