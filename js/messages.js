@@ -1,57 +1,188 @@
-// js/messages.js
-
 import {
   collection,
   addDoc,
   query,
   orderBy,
   onSnapshot,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  serverTimestamp,
+  updateDoc,
+  doc,
+  arrayUnion
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-import { db } from "./firebase-config.js";
+import { db } from "./firebase.js";
 
 /**
- * Envoyer un message dans une conversation
+ * Référence aux messages d'une conversation.
  */
-export async function sendMessage(chatId, userId, text) {
-  if (!chatId || !userId || !text.trim()) {
-    throw new Error("Informations du message incomplètes.");
+function messagesCollection(chatId) {
+  if (!chatId) {
+    throw new Error(
+      "Identifiant de conversation manquant."
+    );
+  }
+
+  return collection(
+    db,
+    "conversations",
+    chatId,
+    "messages"
+  );
+}
+
+/**
+ * Envoyer un message texte.
+ */
+export async function sendMessage(
+  chatId,
+  userId,
+  text
+) {
+  const cleanText =
+    String(text || "").trim();
+
+  if (!chatId) {
+    throw new Error(
+      "Conversation introuvable."
+    );
+  }
+
+  if (!userId) {
+    throw new Error(
+      "Utilisateur non connecté."
+    );
+  }
+
+  if (!cleanText) {
+    throw new Error(
+      "Le message est vide."
+    );
   }
 
   return await addDoc(
-    collection(db, "chats", chatId, "messages"),
+    messagesCollection(chatId),
     {
       senderId: userId,
-      text: text.trim(),
-      createdAt: serverTimestamp()
+
+      text: cleanText,
+
+      type: "text",
+
+      createdAt: serverTimestamp(),
+
+      readBy: [userId]
     }
   );
 }
 
 /**
- * Écouter les messages en temps réel
+ * Envoyer un média ou fichier.
  */
-export function listenMessages(chatId, callback) {
-  if (!chatId) return null;
+export async function sendMediaMessage(
+  chatId,
+  userId,
+  type,
+  url,
+  fileName = "",
+  mimeType = "",
+  size = 0
+) {
+  if (!chatId || !userId || !url) {
+    throw new Error(
+      "Informations du fichier incomplètes."
+    );
+  }
 
-  const messagesRef = collection(db, "chats", chatId, "messages");
+  return await addDoc(
+    messagesCollection(chatId),
+    {
+      senderId: userId,
+
+      text: "",
+
+      type,
+
+      url,
+
+      fileName,
+
+      mimeType,
+
+      size,
+
+      createdAt: serverTimestamp(),
+
+      readBy: [userId]
+    }
+  );
+}
+
+/**
+ * Écoute les messages en temps réel.
+ */
+export function listenMessages(
+  chatId,
+  callback,
+  onError = null
+) {
+  if (!chatId) {
+    return null;
+  }
+
+  const messagesRef =
+    messagesCollection(chatId);
 
   const messagesQuery = query(
     messagesRef,
     orderBy("createdAt", "asc")
   );
 
-  return onSnapshot(messagesQuery, (snapshot) => {
-    const messages = [];
+  return onSnapshot(
+    messagesQuery,
+    (snapshot) => {
+      const messages =
+        snapshot.docs.map((message) => ({
+          id: message.id,
+          ...message.data()
+        }));
 
-    snapshot.forEach((doc) => {
-      messages.push({
-        id: doc.id,
-        ...doc.data()
-      });
-    });
+      callback(messages);
+    },
+    (error) => {
+      console.error(
+        "Erreur écoute messages :",
+        error
+      );
 
-    callback(messages);
-  });
+      if (onError) {
+        onError(error);
+      }
+    }
+  );
+}
+
+/**
+ * Marque un message comme lu.
+ */
+export async function markMessageAsRead(
+  chatId,
+  messageId,
+  userId
+) {
+  if (!chatId || !messageId || !userId) {
+    return;
+  }
+
+  await updateDoc(
+    doc(
+      db,
+      "conversations",
+      chatId,
+      "messages",
+      messageId
+    ),
+    {
+      readBy: arrayUnion(userId)
+    }
+  );
 }
